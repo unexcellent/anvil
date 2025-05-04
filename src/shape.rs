@@ -1,8 +1,8 @@
 use cxx::UniquePtr;
-use opencascade_sys::ffi::{self, BRepGProp_VolumeProperties, GProp_GProps_ctor, TopoDS_Shape};
+use opencascade_sys::ffi;
 
 pub struct Shape {
-    pub(crate) inner: Option<UniquePtr<TopoDS_Shape>>,
+    pub(crate) inner: Option<UniquePtr<ffi::TopoDS_Shape>>,
 }
 impl Shape {
     pub(crate) fn from_shape(shape: &ffi::TopoDS_Shape) -> Self {
@@ -26,8 +26,8 @@ impl Shape {
     pub fn volume(&self) -> f64 {
         match &self.inner {
             Some(inner) => {
-                let mut gprops = GProp_GProps_ctor();
-                BRepGProp_VolumeProperties(inner, gprops.pin_mut());
+                let mut gprops = ffi::GProp_GProps_ctor();
+                ffi::BRepGProp_VolumeProperties(inner, gprops.pin_mut());
                 gprops.Mass()
             }
             None => 0.,
