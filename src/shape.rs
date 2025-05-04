@@ -54,7 +54,7 @@ impl PartialEq for Shape {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Cuboid, Point3D};
+    use crate::{Cuboid, Length};
 
     fn round(x: f64, n_digits: u8) -> f64 {
         (x * f64::from(10 ^ n_digits)).round() / f64::from(10 ^ n_digits)
@@ -67,25 +67,21 @@ mod tests {
 
     #[test]
     fn eq_both_cuboid() {
-        let cuboid1 =
-            Cuboid::from_corners(Point3D::from_m(0., 0., 0.), Point3D::from_m(1., 1., 1.));
-        let cuboid2 =
-            Cuboid::from_corners(Point3D::from_m(0., 0., 0.), Point3D::from_m(1., 1., 1.));
+        let cuboid1 = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
+        let cuboid2 = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
         assert!(cuboid1 == cuboid2)
     }
 
     #[test]
     fn neq_both_cuboid() {
-        let cuboid1 =
-            Cuboid::from_corners(Point3D::from_m(0., 0., 0.), Point3D::from_m(1., 1., 1.));
-        let cuboid2 =
-            Cuboid::from_corners(Point3D::from_m(0., 0., 0.), Point3D::from_m(2., 2., 2.));
+        let cuboid1 = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
+        let cuboid2 = Cuboid::from_dim(Length::from_m(2.), Length::from_m(2.), Length::from_m(2.));
         assert!(cuboid1 != cuboid2)
     }
 
     #[test]
     fn volume() {
-        let cuboid = Cuboid::from_corners(Point3D::from_m(0., 0., 0.), Point3D::from_m(1., 1., 1.));
+        let cuboid = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
         assert_eq!(round(cuboid.volume(), 6), 1.)
     }
 }

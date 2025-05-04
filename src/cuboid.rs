@@ -1,9 +1,23 @@
 use opencascade_sys::ffi;
 
-use crate::{Point3D, Shape};
+use crate::{Length, Point3D, Shape};
 
 pub struct Cuboid;
 impl Cuboid {
+    pub fn from_dim(x: Length, y: Length, z: Length) -> Shape {
+        let corner1 = Point3D {
+            x: x * -0.5,
+            y: y * -0.5,
+            z: z * -0.5,
+        };
+        let corner2 = Point3D {
+            x: x * 0.5,
+            y: y * 0.5,
+            z: z * 0.5,
+        };
+
+        Self::from_corners(corner1, corner2)
+    }
     pub fn from_corners(corner1: Point3D, corner2: Point3D) -> Shape {
         let min_x = corner1.x.min(&corner2.x).m();
         let min_y = corner1.y.min(&corner2.y).m();
