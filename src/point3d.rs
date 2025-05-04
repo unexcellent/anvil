@@ -1,5 +1,6 @@
 use crate::Length;
 
+#[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
 pub struct Point3D {
     pub x: Length,
     pub y: Length,

@@ -1,6 +1,8 @@
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
 
+use crate::{Length, Point3D};
+
 pub struct Shape {
     pub(crate) inner: Option<UniquePtr<ffi::TopoDS_Shape>>,
 }
@@ -28,9 +30,25 @@ impl Shape {
             Some(inner) => {
                 let mut gprops = ffi::GProp_GProps_ctor();
                 ffi::BRepGProp_VolumeProperties(inner, gprops.pin_mut());
-                gprops.Mass()
+                round(gprops.Mass(), 9)
             }
             None => 0.,
+        }
+    }
+    pub fn center_of_mass(&self) -> Option<Point3D> {
+        match &self.inner {
+            Some(inner) => {
+                let mut gprops = ffi::GProp_GProps_ctor();
+                ffi::BRepGProp_VolumeProperties(inner, gprops.pin_mut());
+                let centre_of_mass = ffi::GProp_GProps_CentreOfMass(&gprops);
+
+                Some(Point3D {
+                    x: Length::from_m(round(centre_of_mass.X(), 9)),
+                    y: Length::from_m(round(centre_of_mass.Y(), 9)),
+                    z: Length::from_m(round(centre_of_mass.Z(), 9)),
+                })
+            }
+            None => None,
         }
     }
 }
@@ -51,14 +69,14 @@ impl PartialEq for Shape {
     }
 }
 
+fn round(x: f64, n_digits: u8) -> f64 {
+    (x * f64::from(10 ^ n_digits)).round() / f64::from(10 ^ n_digits)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Cuboid, Length};
-
-    fn round(x: f64, n_digits: u8) -> f64 {
-        (x * f64::from(10 ^ n_digits)).round() / f64::from(10 ^ n_digits)
-    }
+    use crate::Cuboid;
 
     #[test]
     fn eq_both_none() {
@@ -100,7 +118,19 @@ mod tests {
 
     #[test]
     fn volume() {
-        let cuboid = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
-        assert_eq!(round(cuboid.volume(), 6), 1.)
+        let cuboid = Cuboid::from_m(1., 1., 1.);
+        assert_eq!(cuboid.volume(), 1.)
+    }
+
+    #[test]
+    fn centre_of_mass_at_origin() {
+        let cuboid = Cuboid::from_m(1., 1., 1.);
+        assert_eq!(cuboid.center_of_mass(), Some(Point3D::from_m(0., 0., 0.)))
+    }
+
+    #[test]
+    fn centre_of_mass_not_at_origin() {
+        let cuboid = Cuboid::from_corners(Point3D::from_m(0., 0., 0.), Point3D::from_m(2., 2., 2.));
+        assert_eq!(cuboid.center_of_mass(), Some(Point3D::from_m(1., 1., 1.)))
     }
 }
