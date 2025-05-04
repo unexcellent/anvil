@@ -33,3 +33,14 @@ impl Cuboid {
         Shape::from_shape(cuboid.pin_mut().Shape())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    impl Cuboid {
+        pub fn from_m(x: f64, y: f64, z: f64) -> Shape {
+            Cuboid::from_dim(Length::from_m(x), Length::from_m(y), Length::from_m(z))
+        }
+    }
+}

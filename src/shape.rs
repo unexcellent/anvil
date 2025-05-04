@@ -67,22 +67,22 @@ mod tests {
 
     #[test]
     fn eq_both_cuboid() {
-        let cuboid1 = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
-        let cuboid2 = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
+        let cuboid1 = Cuboid::from_m(1., 1., 1.);
+        let cuboid2 = Cuboid::from_m(1., 1., 1.);
         assert!(cuboid1 == cuboid2)
     }
 
     #[test]
     fn neq_both_cuboid() {
-        let cuboid1 = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
-        let cuboid2 = Cuboid::from_dim(Length::from_m(2.), Length::from_m(2.), Length::from_m(2.));
+        let cuboid1 = Cuboid::from_m(1., 1., 1.);
+        let cuboid2 = Cuboid::from_m(2., 2., 2.);
         assert!(cuboid1 != cuboid2)
     }
 
     #[test]
     fn intersect_same_shape() {
-        let cuboid1 = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
-        let cuboid2 = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
+        let cuboid1 = Cuboid::from_m(1., 1., 1.);
+        let cuboid2 = Cuboid::from_m(1., 1., 1.);
 
         assert!(cuboid1.intersect(&cuboid2) == cuboid1);
         assert!(cuboid2.intersect(&cuboid1) == cuboid2);
@@ -90,9 +90,9 @@ mod tests {
 
     #[test]
     fn intersect_different_shape() {
-        let cuboid1 = Cuboid::from_dim(Length::from_m(5.), Length::from_m(5.), Length::from_m(1.));
-        let cuboid2 = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(5.));
-        let right = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
+        let cuboid1 = Cuboid::from_m(5., 5., 1.);
+        let cuboid2 = Cuboid::from_m(1., 1., 5.);
+        let right = Cuboid::from_m(1., 1., 1.);
 
         assert!(cuboid1.intersect(&cuboid2) == right);
         assert!(cuboid2.intersect(&cuboid1) == right);
