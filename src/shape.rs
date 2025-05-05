@@ -1,5 +1,5 @@
 use cxx::UniquePtr;
-use opencascade_sys::ffi::{self};
+use opencascade_sys::ffi;
 
 use crate::{Length, Point3D};
 
@@ -110,7 +110,7 @@ fn round(x: f64, n_digits: u8) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Cuboid, cuboid};
+    use crate::Cuboid;
 
     #[test]
     fn eq_both_none() {
