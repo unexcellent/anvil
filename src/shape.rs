@@ -37,6 +37,16 @@ impl Shape {
             _ => Shape { inner: None },
         }
     }
+    pub fn subtract(&self, other: &Self) -> Self {
+        match (&self.inner, &other.inner) {
+            (Some(self_inner), Some(other_inner)) => {
+                let mut fuse_operation = ffi::BRepAlgoAPI_Cut_ctor(self_inner, other_inner);
+                Self::from_shape(fuse_operation.pin_mut().Shape())
+            }
+            (Some(_), None) => self.clone(),
+            (None, _) => Shape { inner: None },
+        }
+    }
     pub fn move_to(&self, loc: Point3D) -> Self {
         match &self.inner {
             Some(inner) => {
@@ -184,6 +194,17 @@ mod tests {
     }
 
     #[test]
+    fn add() {
+        let cuboid1 = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 1.));
+        let cuboid2 =
+            Cuboid::from_corners(Point3D::from_m(0., 0., 1.), Point3D::from_m(1., 1., 2.));
+        let right = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 2.));
+
+        assert!(cuboid1.add(&cuboid2) == right);
+        assert!(cuboid2.add(&cuboid1) == right);
+    }
+
+    #[test]
     fn intersect_same_shape() {
         let cuboid1 = Cuboid::from_m(1., 1., 1.);
         let cuboid2 = Cuboid::from_m(1., 1., 1.);
@@ -203,14 +224,13 @@ mod tests {
     }
 
     #[test]
-    fn add() {
-        let cuboid1 = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 1.));
+    fn subtract() {
+        let cuboid1 = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 2.));
         let cuboid2 =
             Cuboid::from_corners(Point3D::from_m(0., 0., 1.), Point3D::from_m(1., 1., 2.));
-        let right = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 2.));
+        let right = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 1.));
 
-        assert!(cuboid1.add(&cuboid2) == right);
-        assert!(cuboid2.add(&cuboid1) == right);
+        assert!(cuboid1.subtract(&cuboid2) == right);
     }
 
     #[test]
