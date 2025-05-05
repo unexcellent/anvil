@@ -1,5 +1,5 @@
 use cxx::UniquePtr;
-use opencascade_sys::ffi;
+use opencascade_sys::ffi::{self};
 
 use crate::{Length, Point3D};
 
@@ -22,6 +22,27 @@ impl Shape {
                 Self::from_shape(fuse_operation.pin_mut().Shape())
             }
             _ => Shape { inner: None },
+        }
+    }
+    pub fn move_to(&self, loc: Point3D) -> Self {
+        match &self.inner {
+            Some(inner) => {
+                let mut transform = ffi::new_transform();
+                transform.pin_mut().set_translation_vec(&ffi::new_vec(
+                    loc.x.m(),
+                    loc.y.m(),
+                    loc.z.m(),
+                ));
+                let location = ffi::TopLoc_Location_from_transform(&transform);
+
+                let mut new_inner = clone_topods_shape(inner);
+                new_inner.pin_mut().set_global_translation(&location, false);
+
+                Shape {
+                    inner: Some(new_inner),
+                }
+            }
+            None => Self { inner: None },
         }
     }
 
@@ -53,6 +74,15 @@ impl Shape {
     }
 }
 
+impl Clone for Shape {
+    fn clone(&self) -> Self {
+        match &self.inner {
+            Some(inner) => Self::from_shape(inner),
+            None => Shape { inner: None },
+        }
+    }
+}
+
 impl PartialEq for Shape {
     fn eq(&self, other: &Self) -> bool {
         match (&self.inner, &other.inner) {
@@ -69,6 +99,10 @@ impl PartialEq for Shape {
     }
 }
 
+fn clone_topods_shape(inner: &UniquePtr<ffi::TopoDS_Shape>) -> UniquePtr<ffi::TopoDS_Shape> {
+    ffi::TopoDS_Shape_to_owned(inner)
+}
+
 fn round(x: f64, n_digits: u8) -> f64 {
     (x * f64::from(10 ^ n_digits)).round() / f64::from(10 ^ n_digits)
 }
@@ -76,7 +110,7 @@ fn round(x: f64, n_digits: u8) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Cuboid;
+    use crate::{Cuboid, cuboid};
 
     #[test]
     fn eq_both_none() {
@@ -114,6 +148,25 @@ mod tests {
 
         assert!(cuboid1.intersect(&cuboid2) == right);
         assert!(cuboid2.intersect(&cuboid1) == right);
+    }
+
+    #[test]
+    fn move_to() {
+        let cuboid = Cuboid::from_m(1., 1., 1.);
+        let loc = Point3D::from_m(2., 2., 2.);
+
+        assert_eq!(cuboid.center_of_mass(), Some(Point3D::origin()));
+        assert_eq!(cuboid.move_to(loc).center_of_mass(), Some(loc));
+    }
+
+    #[test]
+    fn move_to_deepcopied() {
+        let cuboid1 = Cuboid::from_m(1., 1., 1.);
+        let loc = Point3D::from_m(2., 2., 2.);
+        let cuboid2 = cuboid1.move_to(loc);
+
+        assert_eq!(cuboid1.center_of_mass(), Some(Point3D::origin()));
+        assert_eq!(cuboid2.center_of_mass(), Some(loc));
     }
 
     #[test]

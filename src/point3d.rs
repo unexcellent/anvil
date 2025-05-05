@@ -10,6 +10,9 @@ impl Point3D {
     pub fn new(x: Length, y: Length, z: Length) -> Self {
         Point3D { x, y, z }
     }
+    pub fn origin() -> Self {
+        Self::from_mm(0., 0., 0.)
+    }
     pub fn from_mm(x: f64, y: f64, z: f64) -> Self {
         Point3D {
             x: Length::from_mm(x),
