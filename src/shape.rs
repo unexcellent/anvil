@@ -1,7 +1,9 @@
+use std::path::Path;
+
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
 
-use crate::{Length, Point3D};
+use crate::{Error, Length, Point3D};
 
 pub struct Shape {
     pub(crate) inner: Option<UniquePtr<ffi::TopoDS_Shape>>,
@@ -72,6 +74,31 @@ impl Shape {
             None => None,
         }
     }
+
+    pub fn write_step(&self, path: impl AsRef<Path>) -> Result<(), Error> {
+        match &self.inner {
+            Some(inner) => {
+                let mut writer = ffi::STEPControl_Writer_ctor();
+
+                let status = ffi::transfer_shape(writer.pin_mut(), inner);
+
+                if status != ffi::IFSelect_ReturnStatus::IFSelect_RetDone {
+                    return Err(Error::StepWrite(path.as_ref().to_path_buf()));
+                }
+
+                let status = ffi::write_step(
+                    writer.pin_mut(),
+                    path.as_ref().to_string_lossy().to_string(),
+                );
+
+                if status != ffi::IFSelect_ReturnStatus::IFSelect_RetDone {
+                    return Err(Error::StepWrite(path.as_ref().to_path_buf()));
+                }
+            }
+            None => return Err(Error::StepWrite(path.as_ref().to_path_buf())),
+        }
+        Ok(())
+    }
 }
 
 impl Clone for Shape {
@@ -109,8 +136,11 @@ fn round(x: f64, n_digits: u8) -> f64 {
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+
     use super::*;
-    use crate::Cuboid;
+    use crate::{Cuboid, Sphere};
+    use tempdir::TempDir;
 
     #[test]
     fn eq_both_none() {
@@ -129,6 +159,20 @@ mod tests {
         let cuboid1 = Cuboid::from_m(1., 1., 1.);
         let cuboid2 = Cuboid::from_m(2., 2., 2.);
         assert!(cuboid1 != cuboid2)
+    }
+
+    #[test]
+    fn eq_both_sphere() {
+        let sphere1 = Sphere::from_radius(Length::from_m(2.));
+        let sphere2 = Sphere::from_radius(Length::from_m(2.));
+        assert!(sphere1 == sphere2)
+    }
+
+    #[test]
+    fn neq_both_sphere() {
+        let sphere1 = Sphere::from_radius(Length::from_m(1.));
+        let sphere2 = Sphere::from_radius(Length::from_m(2.));
+        assert!(sphere1 != sphere2)
     }
 
     #[test]
@@ -185,5 +229,16 @@ mod tests {
     fn centre_of_mass_not_at_origin() {
         let cuboid = Cuboid::from_corners(Point3D::from_m(0., 0., 0.), Point3D::from_m(2., 2., 2.));
         assert_eq!(cuboid.center_of_mass(), Some(Point3D::from_m(1., 1., 1.)))
+    }
+
+    #[test]
+    fn write_step() {
+        let tmp_dir = TempDir::new("step").expect("could not create tempdir");
+        let path = tmp_dir.path().join("shape.step");
+        let shape = Cuboid::from_m(1., 1., 1.);
+
+        assert!(!path.is_file());
+        shape.write_step(&path);
+        assert!(path.is_file());
     }
 }
