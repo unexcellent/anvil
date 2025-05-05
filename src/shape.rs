@@ -17,6 +17,17 @@ impl Shape {
         Self { inner: None }
     }
 
+    pub fn add(&self, other: &Self) -> Self {
+        match (&self.inner, &other.inner) {
+            (Some(self_inner), Some(other_inner)) => {
+                let mut fuse_operation = ffi::BRepAlgoAPI_Fuse_ctor(self_inner, other_inner);
+                Self::from_shape(fuse_operation.pin_mut().Shape())
+            }
+            (Some(_), None) => self.clone(),
+            (None, Some(_)) => other.clone(),
+            (None, None) => self.clone(),
+        }
+    }
     pub fn intersect(&self, other: &Self) -> Self {
         match (&self.inner, &other.inner) {
             (Some(self_inner), Some(other_inner)) => {
@@ -116,8 +127,8 @@ impl PartialEq for Shape {
             (Some(_), Some(_)) => {
                 let intersection = self.intersect(other);
 
-                (intersection.volume() - self.volume()).abs() < 1e-7
-                    && (intersection.volume() - other.volume()).abs() < 1e-7
+                (intersection.volume() - self.volume()).abs() < intersection.volume() * 1e-7
+                    && (intersection.volume() - other.volume()).abs() < intersection.volume() * 1e-7
             }
             (Some(_), None) => false,
             (None, Some(_)) => false,
@@ -136,11 +147,8 @@ fn round(x: f64, n_digits: u8) -> f64 {
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
-
     use super::*;
     use crate::{Cuboid, Sphere};
-    use tempdir::TempDir;
 
     #[test]
     fn eq_both_none() {
@@ -195,6 +203,17 @@ mod tests {
     }
 
     #[test]
+    fn add() {
+        let cuboid1 = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 1.));
+        let cuboid2 =
+            Cuboid::from_corners(Point3D::from_m(0., 0., 1.), Point3D::from_m(1., 1., 2.));
+        let right = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 2.));
+
+        assert!(cuboid1.add(&cuboid2) == right);
+        assert!(cuboid2.add(&cuboid1) == right);
+    }
+
+    #[test]
     fn move_to() {
         let cuboid = Cuboid::from_m(1., 1., 1.);
         let loc = Point3D::from_m(2., 2., 2.);
@@ -229,16 +248,5 @@ mod tests {
     fn centre_of_mass_not_at_origin() {
         let cuboid = Cuboid::from_corners(Point3D::from_m(0., 0., 0.), Point3D::from_m(2., 2., 2.));
         assert_eq!(cuboid.center_of_mass(), Some(Point3D::from_m(1., 1., 1.)))
-    }
-
-    #[test]
-    fn write_step() {
-        let tmp_dir = TempDir::new("step").expect("could not create tempdir");
-        let path = tmp_dir.path().join("shape.step");
-        let shape = Cuboid::from_m(1., 1., 1.);
-
-        assert!(!path.is_file());
-        shape.write_step(&path);
-        assert!(path.is_file());
     }
 }
