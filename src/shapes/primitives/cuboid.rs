@@ -12,7 +12,8 @@ impl Cuboid {
     /// use anvil::{Cuboid, Length, Point3D, Shape};
     ///
     /// let shape = Cuboid::from_dim(Length::from_m(1.), Length::from_m(2.), Length::from_m(3.));
-    /// assert_eq!(shape.center_of_mass(), Point3D::origin());
+    /// assert_eq!(shape.center_of_mass(), Some(Point3D::origin()));
+    /// assert_eq!(shape.volume(), 6.);
     /// ```
     pub fn from_dim(x: Length, y: Length, z: Length) -> Shape {
         let corner1 = Point3D {
@@ -28,6 +29,16 @@ impl Cuboid {
 
         Self::from_corners(corner1, corner2)
     }
+    /// Construct a centered cuboidal `Shape` from its corner locations.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Cuboid, Length, Point3D, Shape};
+    ///
+    /// let shape = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(2., 2., 2.));
+    /// assert_eq!(shape.center_of_mass(), Some(Point3D::from_m(1., 1., 1.)));
+    /// assert_eq!(shape.volume(), 8.);
+    /// ```
     pub fn from_corners(corner1: Point3D, corner2: Point3D) -> Shape {
         let min_x = corner1.x.min(&corner2.x).m();
         let min_y = corner1.y.min(&corner2.y).m();
