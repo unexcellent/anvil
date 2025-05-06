@@ -74,7 +74,7 @@ impl Shape {
             Some(inner) => {
                 let mut gprops = ffi::GProp_GProps_ctor();
                 ffi::BRepGProp_VolumeProperties(inner, gprops.pin_mut());
-                round(gprops.Mass(), 9)
+                gprops.Mass()
             }
             None => 0.,
         }
@@ -255,7 +255,7 @@ mod tests {
     #[test]
     fn volume() {
         let cuboid = Cuboid::from_m(1., 1., 1.);
-        assert_eq!(cuboid.volume(), 1.)
+        assert!((cuboid.volume() - 1.).abs() < 1e-9)
     }
 
     #[test]
