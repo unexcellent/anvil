@@ -2,6 +2,7 @@ use std::ops::{Add, Div, Mul, Sub};
 
 use crate::Length;
 
+/// A location in three-dimensional space.
 #[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
 pub struct Point3D {
     pub x: Length,
@@ -9,12 +10,26 @@ pub struct Point3D {
     pub z: Length,
 }
 impl Point3D {
-    pub fn new(x: Length, y: Length, z: Length) -> Self {
-        Point3D { x, y, z }
-    }
+    /// The origin point at the position x=0, y=0, z=0.
     pub fn origin() -> Self {
         Self::from_mm(0., 0., 0.)
     }
+
+    /// Construct a `Point3D` from its component lengths.
+    pub fn new(x: Length, y: Length, z: Length) -> Self {
+        Point3D { x, y, z }
+    }
+    /// Construct a `Point3D` from the millimeter length values directly.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Length, Point3D};
+    ///
+    /// let point = Point3D::from_mm(1., 2., 3.);
+    /// assert_eq!(point.x, Length::from_mm(1.));
+    /// assert_eq!(point.y, Length::from_mm(2.));
+    /// assert_eq!(point.z, Length::from_mm(3.));
+    /// ```
     pub fn from_mm(x: f64, y: f64, z: f64) -> Self {
         Point3D {
             x: Length::from_mm(x),
@@ -22,6 +37,17 @@ impl Point3D {
             z: Length::from_mm(z),
         }
     }
+    /// Construct a `Point3D` from the meter length values directly.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Length, Point3D};
+    ///
+    /// let point = Point3D::from_m(1., 2., 3.);
+    /// assert_eq!(point.x, Length::from_m(1.));
+    /// assert_eq!(point.y, Length::from_m(2.));
+    /// assert_eq!(point.z, Length::from_m(3.));
+    /// ```
     pub fn from_m(x: f64, y: f64, z: f64) -> Self {
         Point3D {
             x: Length::from_m(x),
