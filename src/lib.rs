@@ -1,10 +1,10 @@
 mod errors;
+mod parts;
 mod quantities;
-mod shapes;
 
 pub use errors::Error;
-pub use quantities::{Length, Point3D};
-pub use shapes::{
-    Shape,
+pub use parts::{
+    Part,
     primitives::{Cuboid, Sphere},
 };
+pub use quantities::{Length, Point3D};

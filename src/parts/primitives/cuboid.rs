@@ -1,24 +1,24 @@
 use opencascade_sys::ffi;
 
-use crate::{Length, Point3D, Shape, quantities::is_zero};
+use crate::{Length, Part, Point3D, quantities::is_zero};
 
-/// Builder for a cuboidal `Shape`.
+/// Builder for a cuboidal `Part`.
 ///
 /// While the `Cuboid` struct itself is not used, its constructor methods like `Cuboid::from_dim()`
-/// can be used to build this primitive `Shape`.
+/// can be used to build this primitive `Part`.
 pub struct Cuboid;
 impl Cuboid {
-    /// Construct a centered cuboidal `Shape` from the x, y, and z dimensions.
+    /// Construct a centered cuboidal `Part` from the x, y, and z dimensions.
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Cuboid, Length, Point3D, Shape};
+    /// use anvil::{Cuboid, Length, Point3D, Part};
     ///
-    /// let shape = Cuboid::from_dim(Length::from_m(1.), Length::from_m(2.), Length::from_m(3.));
-    /// assert_eq!(shape.center_of_mass(), Some(Point3D::origin()));
-    /// assert!((shape.volume() - 6.).abs() < 1e-5);
+    /// let part = Cuboid::from_dim(Length::from_m(1.), Length::from_m(2.), Length::from_m(3.));
+    /// assert_eq!(part.center_of_mass(), Some(Point3D::origin()));
+    /// assert!((part.volume() - 6.).abs() < 1e-5);
     /// ```
-    pub fn from_dim(x: Length, y: Length, z: Length) -> Shape {
+    pub fn from_dim(x: Length, y: Length, z: Length) -> Part {
         let corner1 = Point3D {
             x: x * -0.5,
             y: y * -0.5,
@@ -32,24 +32,24 @@ impl Cuboid {
 
         Self::from_corners(corner1, corner2)
     }
-    /// Construct a centered cuboidal `Shape` from its corner locations.
+    /// Construct a centered cuboidal `Part` from its corner locations.
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Cuboid, Length, Point3D, Shape};
+    /// use anvil::{Cuboid, Length, Point3D, Part};
     ///
-    /// let shape = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(2., 2., 2.));
-    /// assert_eq!(shape.center_of_mass(), Some(Point3D::from_m(1., 1., 1.)));
-    /// assert!((shape.volume() - 8.).abs() < 1e-5);
+    /// let part = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(2., 2., 2.));
+    /// assert_eq!(part.center_of_mass(), Some(Point3D::from_m(1., 1., 1.)));
+    /// assert!((part.volume() - 8.).abs() < 1e-5);
     /// ```
-    pub fn from_corners(corner1: Point3D, corner2: Point3D) -> Shape {
+    pub fn from_corners(corner1: Point3D, corner2: Point3D) -> Part {
         let volume_is_zero = is_zero(&[
             corner1.x - corner2.x,
             corner1.y - corner2.y,
             corner1.z - corner2.z,
         ]);
         if volume_is_zero {
-            return Shape::empty();
+            return Part::empty();
         }
 
         let min_x = corner1.x.min(&corner2.x).m();
@@ -63,7 +63,7 @@ impl Cuboid {
         let mut cuboid =
             ffi::BRepPrimAPI_MakeBox_ctor(&point, max_x - min_x, max_y - min_y, max_z - min_z);
 
-        Shape::from_shape(cuboid.pin_mut().Shape())
+        Part::from_part(cuboid.pin_mut().Shape())
     }
 }
 
@@ -72,7 +72,7 @@ mod tests {
     use super::*;
 
     impl Cuboid {
-        pub fn from_m(x: f64, y: f64, z: f64) -> Shape {
+        pub fn from_m(x: f64, y: f64, z: f64) -> Part {
             Cuboid::from_dim(Length::from_m(x), Length::from_m(y), Length::from_m(z))
         }
     }
@@ -81,15 +81,15 @@ mod tests {
     fn from_dim_empty() {
         assert!(
             Cuboid::from_dim(Length::from_m(0.), Length::from_m(1.), Length::from_m(1.))
-                == Shape::empty()
+                == Part::empty()
         );
         assert!(
             Cuboid::from_dim(Length::from_m(1.), Length::from_m(0.), Length::from_m(1.))
-                == Shape::empty()
+                == Part::empty()
         );
         assert!(
             Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(0.))
-                == Shape::empty()
+                == Part::empty()
         )
     }
 }

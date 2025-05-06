@@ -5,23 +5,51 @@ use opencascade_sys::ffi;
 
 use crate::{Error, Length, Point3D};
 
-pub struct Shape {
+/// A 3D object in space.
+pub struct Part {
     pub(crate) inner: Option<UniquePtr<ffi::TopoDS_Shape>>,
 }
-impl Shape {
-    pub(crate) fn from_shape(shape: &ffi::TopoDS_Shape) -> Self {
-        let inner = ffi::TopoDS_Shape_to_owned(shape);
+impl Part {
+    pub(crate) fn from_part(part: &ffi::TopoDS_Shape) -> Self {
+        let inner = ffi::TopoDS_Shape_to_owned(part);
         Self { inner: Some(inner) }
     }
+
+    /// Construct an empty `Part` which can be used for merging with other parts.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::Part;
+    ///
+    /// let part = Part::empty();
+    /// assert_eq!(part.volume(), 0.);
+    /// ```
     pub fn empty() -> Self {
         Self { inner: None }
     }
 
+    /// Merge this `Part` with another.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Cuboid, Point3D};
+    ///
+    /// let cuboid1 = Cuboid::from_corners(
+    ///     Point3D::origin(),
+    ///     Point3D::from_m(1., 1., 1.)
+    /// );
+    /// let cuboid2 = Cuboid::from_corners(
+    ///     Point3D::from_m(0., 0., 1.),
+    ///     Point3D::from_m(1., 1., 2.)
+    /// );
+    /// assert!(cuboid1.add(&cuboid2) == Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 2.)));
+    /// assert!(cuboid2.add(&cuboid1) == Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 2.)));
+    /// ```
     pub fn add(&self, other: &Self) -> Self {
         match (&self.inner, &other.inner) {
             (Some(self_inner), Some(other_inner)) => {
                 let mut fuse_operation = ffi::BRepAlgoAPI_Fuse_ctor(self_inner, other_inner);
-                Self::from_shape(fuse_operation.pin_mut().Shape())
+                Self::from_part(fuse_operation.pin_mut().Shape())
             }
             (Some(_), None) => self.clone(),
             (None, Some(_)) => other.clone(),
@@ -32,19 +60,19 @@ impl Shape {
         match (&self.inner, &other.inner) {
             (Some(self_inner), Some(other_inner)) => {
                 let mut fuse_operation = ffi::BRepAlgoAPI_Common_ctor(self_inner, other_inner);
-                Self::from_shape(fuse_operation.pin_mut().Shape())
+                Self::from_part(fuse_operation.pin_mut().Shape())
             }
-            _ => Shape { inner: None },
+            _ => Part { inner: None },
         }
     }
     pub fn subtract(&self, other: &Self) -> Self {
         match (&self.inner, &other.inner) {
             (Some(self_inner), Some(other_inner)) => {
                 let mut fuse_operation = ffi::BRepAlgoAPI_Cut_ctor(self_inner, other_inner);
-                Self::from_shape(fuse_operation.pin_mut().Shape())
+                Self::from_part(fuse_operation.pin_mut().Shape())
             }
             (Some(_), None) => self.clone(),
-            (None, _) => Shape { inner: None },
+            (None, _) => Part { inner: None },
         }
     }
     pub fn move_to(&self, loc: Point3D) -> Self {
@@ -61,7 +89,7 @@ impl Shape {
                 let mut new_inner = clone_topods_shape(inner);
                 new_inner.pin_mut().set_global_translation(&location, false);
 
-                Shape {
+                Part {
                     inner: Some(new_inner),
                 }
             }
@@ -122,16 +150,16 @@ impl Shape {
     }
 }
 
-impl Clone for Shape {
+impl Clone for Part {
     fn clone(&self) -> Self {
         match &self.inner {
-            Some(inner) => Self::from_shape(inner),
-            None => Shape { inner: None },
+            Some(inner) => Self::from_part(inner),
+            None => Part { inner: None },
         }
     }
 }
 
-impl PartialEq for Shape {
+impl PartialEq for Part {
     fn eq(&self, other: &Self) -> bool {
         match (&self.inner, &other.inner) {
             (Some(_), Some(_)) => {
@@ -162,7 +190,7 @@ mod tests {
 
     #[test]
     fn eq_both_none() {
-        assert!(Shape::empty() == Shape::empty())
+        assert!(Part::empty() == Part::empty())
     }
 
     #[test]
@@ -191,17 +219,6 @@ mod tests {
         let sphere1 = Sphere::from_radius(Length::from_m(1.));
         let sphere2 = Sphere::from_radius(Length::from_m(2.));
         assert!(sphere1 != sphere2)
-    }
-
-    #[test]
-    fn add() {
-        let cuboid1 = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 1.));
-        let cuboid2 =
-            Cuboid::from_corners(Point3D::from_m(0., 0., 1.), Point3D::from_m(1., 1., 2.));
-        let right = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 2.));
-
-        assert!(cuboid1.add(&cuboid2) == right);
-        assert!(cuboid2.add(&cuboid1) == right);
     }
 
     #[test]
