@@ -1,3 +1,5 @@
+use std::ops::{Add, Div, Mul, Sub};
+
 use crate::Length;
 
 #[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
@@ -26,5 +28,80 @@ impl Point3D {
             y: Length::from_m(y),
             z: Length::from_m(z),
         }
+    }
+}
+
+impl Add<Point3D> for Point3D {
+    type Output = Point3D;
+    fn add(self, other: Point3D) -> Point3D {
+        Point3D::new(self.x + other.x, self.y + other.y, self.z + other.z)
+    }
+}
+
+impl Sub<Point3D> for Point3D {
+    type Output = Point3D;
+    fn sub(self, other: Point3D) -> Point3D {
+        Point3D::new(self.x - other.x, self.y - other.y, self.z - other.z)
+    }
+}
+
+impl Mul<f64> for Point3D {
+    type Output = Point3D;
+    fn mul(self, other: f64) -> Point3D {
+        Point3D::new(self.x * other, self.y * other, self.z * other)
+    }
+}
+impl Mul<Point3D> for f64 {
+    type Output = Point3D;
+    fn mul(self, other: Point3D) -> Point3D {
+        other * self
+    }
+}
+
+impl Div<f64> for Point3D {
+    type Output = Point3D;
+    fn div(self, other: f64) -> Point3D {
+        Point3D::new(self.x / other, self.y / other, self.z / other)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn add() {
+        let point1 = Point3D::from_m(1., 2., 3.);
+        let point2 = Point3D::from_m(4., 5., 6.);
+
+        assert_eq!(point1 + point2, Point3D::from_m(5., 7., 9.));
+    }
+
+    #[test]
+    fn substract() {
+        let point1 = Point3D::from_m(1., 2., 3.);
+        let point2 = Point3D::from_m(4., 5., 6.);
+
+        assert_eq!(point2 - point1, Point3D::from_m(3., 3., 3.));
+    }
+
+    #[test]
+    fn multiply() {
+        assert_eq!(
+            Point3D::from_m(1., 2., 3.) * 4.,
+            Point3D::from_m(4., 8., 12.)
+        );
+        assert_eq!(
+            4. * Point3D::from_m(1., 2., 3.),
+            Point3D::from_m(4., 8., 12.)
+        );
+    }
+
+    #[test]
+    fn divide() {
+        assert_eq!(
+            Point3D::from_m(4., 8., 12.) / 4.,
+            Point3D::from_m(1., 2., 3.)
+        );
     }
 }
