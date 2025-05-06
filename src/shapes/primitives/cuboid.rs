@@ -2,8 +2,18 @@ use opencascade_sys::ffi;
 
 use crate::{Length, Point3D, Shape};
 
+/// Builder for a cuboidal `Shape`.
 pub struct Cuboid;
 impl Cuboid {
+    /// Construct a centered cuboidal `Shape` from the x, y, and z dimensions.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Cuboid, Length, Point3D, Shape};
+    ///
+    /// let shape = Cuboid::from_dim(Length::from_m(1.), Length::from_m(2.), Length::from_m(3.));
+    /// assert_eq!(shape.center_of_mass(), Point3D::origin());
+    /// ```
     pub fn from_dim(x: Length, y: Length, z: Length) -> Shape {
         let corner1 = Point3D {
             x: x * -0.5,
