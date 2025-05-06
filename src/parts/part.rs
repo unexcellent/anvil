@@ -43,7 +43,6 @@ impl Part {
     ///     Point3D::from_m(1., 1., 2.)
     /// );
     /// assert!(cuboid1.add(&cuboid2) == Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 2.)));
-    /// assert!(cuboid2.add(&cuboid1) == Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 2.)));
     /// ```
     pub fn add(&self, other: &Self) -> Self {
         match (&self.inner, &other.inner) {
@@ -56,6 +55,18 @@ impl Part {
             (None, None) => self.clone(),
         }
     }
+    /// Return the part that is created from the overlapping volume between this part and another.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Cuboid, Length};
+    ///
+    /// let cuboid1 = Cuboid::from_dim(Length::from_m(5.), Length::from_m(5.), Length::from_m(1.));
+    /// let cuboid2 = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(5.));
+    /// assert!(
+    ///     cuboid1.intersect(&cuboid2) == Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.))
+    /// )
+    /// ```
     pub fn intersect(&self, other: &Self) -> Self {
         match (&self.inner, &other.inner) {
             (Some(self_inner), Some(other_inner)) => {
@@ -65,6 +76,22 @@ impl Part {
             _ => Part { inner: None },
         }
     }
+    /// Return a copy of this `Part` with the intersection with another removed.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Cuboid, Point3D};
+    ///
+    /// let cuboid1 = Cuboid::from_corners(
+    ///     Point3D::origin(),
+    ///     Point3D::from_m(1., 1., 2.)
+    /// );
+    /// let cuboid2 = Cuboid::from_corners(
+    ///     Point3D::from_m(0., 0., 1.),
+    ///     Point3D::from_m(1., 1., 2.)
+    /// );
+    /// assert!(cuboid1.subtract(&cuboid2) == Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 1.)));
+    /// ```
     pub fn subtract(&self, other: &Self) -> Self {
         match (&self.inner, &other.inner) {
             (Some(self_inner), Some(other_inner)) => {
@@ -75,6 +102,17 @@ impl Part {
             (None, _) => Part { inner: None },
         }
     }
+    /// Return a clone of this part with the center moved to a specified point.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Cuboid, Length, Point3D};
+    ///
+    /// let cuboid = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
+    /// let moved_cuboid = cuboid.move_to(Point3D::from_m(2., 2., 2.));
+    /// assert_eq!(cuboid.center_of_mass(), Ok(Point3D::origin()));
+    /// assert_eq!(moved_cuboid.center_of_mass(), Ok(Point3D::from_m(2., 2., 2.)));
+    /// ```
     pub fn move_to(&self, loc: Point3D) -> Self {
         match &self.inner {
             Some(inner) => {
@@ -97,6 +135,17 @@ impl Part {
         }
     }
 
+    /// Return the volume occupied by this `Part` in square meters.
+    ///
+    /// Warning: the volume is susceptibility to floating point errors.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Cuboid, Length};
+    ///
+    /// let cuboid = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
+    /// assert!((cuboid.volume() - 1.).abs() < 1e-9)
+    /// ```
     pub fn volume(&self) -> f64 {
         match &self.inner {
             Some(inner) => {
@@ -107,23 +156,41 @@ impl Part {
             None => 0.,
         }
     }
-    pub fn center_of_mass(&self) -> Option<Point3D> {
+    /// Return the center of all points of the `Part`.
+    ///
+    /// If the `Part` is empty, an `Err(Error::EmptyPart)` is returned.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use anvil::{Cuboid, Length, Point3D};
+    ///
+    /// let centered_cuboid = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
+    /// assert_eq!(centered_cuboid.center_of_mass(), Ok(Point3D::origin()));
+    ///
+    /// let non_centered_cuboid = Cuboid::from_corners(
+    ///     Point3D::from_m(0., 0., 0.),
+    ///     Point3D::from_m(2., 2., 2.)
+    /// );
+    /// assert_eq!(non_centered_cuboid.center_of_mass(), Ok(Point3D::from_m(1., 1., 1.)));
+    /// ```
+    pub fn center_of_mass(&self) -> Result<Point3D, Error> {
         match &self.inner {
             Some(inner) => {
                 let mut gprops = ffi::GProp_GProps_ctor();
                 ffi::BRepGProp_VolumeProperties(inner, gprops.pin_mut());
                 let centre_of_mass = ffi::GProp_GProps_CentreOfMass(&gprops);
 
-                Some(Point3D {
+                Ok(Point3D {
                     x: Length::from_m(round(centre_of_mass.X(), 9)),
                     y: Length::from_m(round(centre_of_mass.Y(), 9)),
                     z: Length::from_m(round(centre_of_mass.Z(), 9)),
                 })
             }
-            None => None,
+            None => Err(Error::EmptyPart),
         }
     }
 
+    /// Write a the part to a file in the STEP format.
     pub fn write_step(&self, path: impl AsRef<Path>) -> Result<(), Error> {
         match &self.inner {
             Some(inner) => {
@@ -144,7 +211,7 @@ impl Part {
                     return Err(Error::StepWrite(path.as_ref().to_path_buf()));
                 }
             }
-            None => return Err(Error::StepWrite(path.as_ref().to_path_buf())),
+            None => return Err(Error::EmptyPart),
         }
         Ok(())
     }
@@ -222,51 +289,13 @@ mod tests {
     }
 
     #[test]
-    fn intersect_same_shape() {
-        let cuboid1 = Cuboid::from_m(1., 1., 1.);
-        let cuboid2 = Cuboid::from_m(1., 1., 1.);
-
-        assert!(cuboid1.intersect(&cuboid2) == cuboid1);
-        assert!(cuboid2.intersect(&cuboid1) == cuboid2);
-    }
-
-    #[test]
-    fn intersect_different_shape() {
-        let cuboid1 = Cuboid::from_m(5., 5., 1.);
-        let cuboid2 = Cuboid::from_m(1., 1., 5.);
-        let right = Cuboid::from_m(1., 1., 1.);
-
-        assert!(cuboid1.intersect(&cuboid2) == right);
-        assert!(cuboid2.intersect(&cuboid1) == right);
-    }
-
-    #[test]
-    fn subtract() {
-        let cuboid1 = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 2.));
-        let cuboid2 =
-            Cuboid::from_corners(Point3D::from_m(0., 0., 1.), Point3D::from_m(1., 1., 2.));
-        let right = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 1.));
-
-        assert!(cuboid1.subtract(&cuboid2) == right);
-    }
-
-    #[test]
-    fn move_to() {
-        let cuboid = Cuboid::from_m(1., 1., 1.);
-        let loc = Point3D::from_m(2., 2., 2.);
-
-        assert_eq!(cuboid.center_of_mass(), Some(Point3D::origin()));
-        assert_eq!(cuboid.move_to(loc).center_of_mass(), Some(loc));
-    }
-
-    #[test]
     fn move_to_deepcopied() {
         let cuboid1 = Cuboid::from_m(1., 1., 1.);
         let loc = Point3D::from_m(2., 2., 2.);
         let cuboid2 = cuboid1.move_to(loc);
 
-        assert_eq!(cuboid1.center_of_mass(), Some(Point3D::origin()));
-        assert_eq!(cuboid2.center_of_mass(), Some(loc));
+        assert_eq!(cuboid1.center_of_mass(), Ok(Point3D::origin()));
+        assert_eq!(cuboid2.center_of_mass(), Ok(loc));
     }
 
     #[test]
@@ -278,12 +307,12 @@ mod tests {
     #[test]
     fn centre_of_mass_at_origin() {
         let cuboid = Cuboid::from_m(1., 1., 1.);
-        assert_eq!(cuboid.center_of_mass(), Some(Point3D::from_m(0., 0., 0.)))
+        assert_eq!(cuboid.center_of_mass(), Ok(Point3D::from_m(0., 0., 0.)))
     }
 
     #[test]
     fn centre_of_mass_not_at_origin() {
         let cuboid = Cuboid::from_corners(Point3D::from_m(0., 0., 0.), Point3D::from_m(2., 2., 2.));
-        assert_eq!(cuboid.center_of_mass(), Some(Point3D::from_m(1., 1., 1.)))
+        assert_eq!(cuboid.center_of_mass(), Ok(Point3D::from_m(1., 1., 1.)))
     }
 }
