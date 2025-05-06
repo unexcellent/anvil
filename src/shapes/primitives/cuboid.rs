@@ -1,6 +1,6 @@
 use opencascade_sys::ffi;
 
-use crate::{Length, Point3D, Shape};
+use crate::{Length, Point3D, Shape, quantities::is_zero};
 
 /// Builder for a cuboidal `Shape`.
 ///
@@ -43,6 +43,15 @@ impl Cuboid {
     /// assert!((shape.volume() - 8.).abs() < 1e-5);
     /// ```
     pub fn from_corners(corner1: Point3D, corner2: Point3D) -> Shape {
+        let volume_is_zero = is_zero(&[
+            corner1.x - corner2.x,
+            corner1.y - corner2.y,
+            corner1.z - corner2.z,
+        ]);
+        if volume_is_zero {
+            return Shape::empty();
+        }
+
         let min_x = corner1.x.min(&corner2.x).m();
         let min_y = corner1.y.min(&corner2.y).m();
         let min_z = corner1.z.min(&corner2.z).m();
@@ -66,5 +75,21 @@ mod tests {
         pub fn from_m(x: f64, y: f64, z: f64) -> Shape {
             Cuboid::from_dim(Length::from_m(x), Length::from_m(y), Length::from_m(z))
         }
+    }
+
+    #[test]
+    fn from_dim_empty() {
+        assert!(
+            Cuboid::from_dim(Length::from_m(0.), Length::from_m(1.), Length::from_m(1.))
+                == Shape::empty()
+        );
+        assert!(
+            Cuboid::from_dim(Length::from_m(1.), Length::from_m(0.), Length::from_m(1.))
+                == Shape::empty()
+        );
+        assert!(
+            Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(0.))
+                == Shape::empty()
+        )
     }
 }

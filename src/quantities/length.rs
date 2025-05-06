@@ -119,6 +119,16 @@ impl Div<f64> for Length {
     }
 }
 
+/// Return true if any length in the input array is zero.
+pub fn is_zero(lengths: &[Length]) -> bool {
+    for length in lengths {
+        if length.mm == 0. {
+            return true;
+        }
+    }
+    false
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
