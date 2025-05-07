@@ -4,15 +4,14 @@ use crate::{Length, Part, Plane, Point2D};
 
 use super::Edge;
 
+#[derive(Default, Debug, PartialEq, Clone)]
 pub struct Sketch {
-    plane: Plane,
     cursor: Point2D,
     edges: Vec<Edge>,
 }
 impl Sketch {
-    pub fn new(plane: Plane) -> Self {
+    pub fn new() -> Self {
         Self {
-            plane,
             cursor: Point2D::origin(),
             edges: vec![],
         }
@@ -22,13 +21,12 @@ impl Sketch {
         new_edges.push(Edge::Line(self.cursor, point));
 
         Self {
-            plane: self.plane.clone(),
             cursor: point,
             edges: new_edges,
         }
     }
-    pub fn extrude(&self, thickness: Length) -> Part {
-        let occt_edges = self.edges.iter().map(|edge| edge.to_occt(&self.plane));
+    pub fn extrude(&self, plane: &Plane, thickness: Length) -> Part {
+        let occt_edges = self.edges.iter().map(|edge| edge.to_occt(plane));
 
         let mut make_wire = ffi::BRepBuilderAPI_MakeWire_ctor();
         for edge in occt_edges {
@@ -42,7 +40,7 @@ impl Sketch {
         let face_shape = ffi::cast_face_to_shape(face);
         let mut make_solid = ffi::BRepPrimAPI_MakePrism_ctor(
             face_shape,
-            &(self.plane.normal() * thickness.m()).to_occt(),
+            &(plane.normal() * thickness.m()).to_occt(),
             false,
             true,
         );
@@ -59,7 +57,7 @@ mod tests {
 
     #[test]
     fn line_to() {
-        let sketch = Sketch::new(Plane::xy()).line_to(Point2D::from_m(1., 2.));
+        let sketch = Sketch::new().line_to(Point2D::from_m(1., 2.));
         assert_eq!(
             sketch.edges,
             vec![Edge::Line(Point2D::origin(), Point2D::from_m(1., 2.))]
@@ -69,26 +67,26 @@ mod tests {
 
     #[test]
     fn extrude_cube() {
-        let sketch = Sketch::new(Plane::xy())
+        let sketch = Sketch::new()
             .line_to(Point2D::from_m(1., 0.))
             .line_to(Point2D::from_m(1., 2.))
             .line_to(Point2D::from_m(0., 2.))
             .line_to(Point2D::origin());
         assert_eq!(
-            sketch.extrude(Length::from_m(3.)),
+            sketch.extrude(&Plane::xy(), Length::from_m(3.)),
             Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 2., 3.))
         )
     }
 
     #[test]
     fn extrude_cube_different_plane() {
-        let sketch = Sketch::new(Plane::xz())
+        let sketch = Sketch::new()
             .line_to(Point2D::from_m(1., 0.))
             .line_to(Point2D::from_m(1., 2.))
             .line_to(Point2D::from_m(0., 2.))
             .line_to(Point2D::origin());
         assert_eq!(
-            sketch.extrude(Length::from_m(-3.)),
+            sketch.extrude(&Plane::xz(), Length::from_m(-3.)),
             Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 3., 2.))
         )
     }

@@ -58,6 +58,12 @@ impl Point2D {
     }
 }
 
+impl Default for Point2D {
+    fn default() -> Self {
+        Self::origin()
+    }
+}
+
 impl Add<Point2D> for Point2D {
     type Output = Point2D;
     fn add(self, other: Point2D) -> Point2D {
