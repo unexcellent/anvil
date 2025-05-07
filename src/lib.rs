@@ -10,5 +10,4 @@ pub use parts::{
     primitives::{Cuboid, Cylinder, Sphere},
 };
 pub use quantities::{Length, Plane, Point2D, Point3D};
-pub use sketches::{Edge, Sketch};
-
+pub use sketches::{Edge, Path, Sketch};
