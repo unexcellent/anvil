@@ -22,7 +22,7 @@ impl Sphere {
             return Part::empty();
         }
         let mut make_sphere = ffi::BRepPrimAPI_MakeSphere_ctor(radius.m());
-        Part::from_part(make_sphere.pin_mut().Shape())
+        Part::from_occt(make_sphere.pin_mut().Shape())
     }
     /// Construct a centered spherical `Part` from a given diameter.
     ///

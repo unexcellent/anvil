@@ -63,7 +63,7 @@ impl Cuboid {
         let mut cuboid =
             ffi::BRepPrimAPI_MakeBox_ctor(&point, max_x - min_x, max_y - min_y, max_z - min_z);
 
-        Part::from_part(cuboid.pin_mut().Shape())
+        Part::from_occt(cuboid.pin_mut().Shape())
     }
 }
 

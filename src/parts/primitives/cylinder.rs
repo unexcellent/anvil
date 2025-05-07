@@ -1,10 +1,10 @@
 use crate::{Length, Part, quantities::is_zero};
 use opencascade_sys::ffi;
 
-/// Builder for a spherical `Part`.
+/// Builder for a cylindrical `Part`.
 ///
-/// While the `Sphere` struct itself is not used, its constructor methods like `Sphere::from_radius()`
-/// can be used to build this primitive `Part`.
+/// While the `Cylinder` struct itself is not used, its constructor methods like
+/// `Cylinder::from_radius()` can be used to build this primitive `Part`.
 pub struct Cylinder;
 impl Cylinder {
     /// Construct a centered cylindrical `Part` from a given radius.
@@ -26,7 +26,7 @@ impl Cylinder {
             &ffi::gp_Dir_ctor(0., 0., 1.),
         );
         let mut make = ffi::BRepPrimAPI_MakeCylinder_ctor(&axis, radius.m(), height.m());
-        Part::from_part(make.pin_mut().Shape())
+        Part::from_occt(make.pin_mut().Shape())
     }
 
     /// Construct a centered cylindrical `Part` from a given diameter.

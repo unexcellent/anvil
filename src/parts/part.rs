@@ -10,7 +10,7 @@ pub struct Part {
     pub(crate) inner: Option<UniquePtr<ffi::TopoDS_Shape>>,
 }
 impl Part {
-    pub(crate) fn from_part(part: &ffi::TopoDS_Shape) -> Self {
+    pub(crate) fn from_occt(part: &ffi::TopoDS_Shape) -> Self {
         let inner = ffi::TopoDS_Shape_to_owned(part);
         Self { inner: Some(inner) }
     }
@@ -48,7 +48,7 @@ impl Part {
         match (&self.inner, &other.inner) {
             (Some(self_inner), Some(other_inner)) => {
                 let mut fuse_operation = ffi::BRepAlgoAPI_Fuse_ctor(self_inner, other_inner);
-                Self::from_part(fuse_operation.pin_mut().Shape())
+                Self::from_occt(fuse_operation.pin_mut().Shape())
             }
             (Some(_), None) => self.clone(),
             (None, Some(_)) => other.clone(),
@@ -71,7 +71,7 @@ impl Part {
         match (&self.inner, &other.inner) {
             (Some(self_inner), Some(other_inner)) => {
                 let mut fuse_operation = ffi::BRepAlgoAPI_Common_ctor(self_inner, other_inner);
-                Self::from_part(fuse_operation.pin_mut().Shape())
+                Self::from_occt(fuse_operation.pin_mut().Shape())
             }
             _ => Part { inner: None },
         }
@@ -96,7 +96,7 @@ impl Part {
         match (&self.inner, &other.inner) {
             (Some(self_inner), Some(other_inner)) => {
                 let mut fuse_operation = ffi::BRepAlgoAPI_Cut_ctor(self_inner, other_inner);
-                Self::from_part(fuse_operation.pin_mut().Shape())
+                Self::from_occt(fuse_operation.pin_mut().Shape())
             }
             (Some(_), None) => self.clone(),
             (None, _) => Part { inner: None },
@@ -220,7 +220,7 @@ impl Part {
 impl Clone for Part {
     fn clone(&self) -> Self {
         match &self.inner {
-            Some(inner) => Self::from_part(inner),
+            Some(inner) => Self::from_occt(inner),
             None => Part { inner: None },
         }
     }
