@@ -13,7 +13,7 @@ pub struct Point3D {
     pub z: Length,
 }
 impl Point3D {
-    pub(crate) fn to_occt_point(&self) -> UniquePtr<ffi::gp_Pnt> {
+    pub(crate) fn to_occt_point(self) -> UniquePtr<ffi::gp_Pnt> {
         ffi::new_point(self.x.m(), self.y.m(), self.z.m())
     }
 
