@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 cxx = "1.0.158"
 opencascade-sys = "0.2.0"
+tempfile = "3.19.1"
 
 [dev-dependencies]
 tempdir = "0.3.7"

@@ -28,7 +28,7 @@ impl Sketch {
         }
     }
     pub fn extrude(&self, thickness: Length) -> Part {
-        let occt_edges = self.edges.iter().map(|edge| edge.to_occt());
+        let occt_edges = self.edges.iter().map(|edge| edge.to_occt(&self.plane));
 
         let mut make_wire = ffi::BRepBuilderAPI_MakeWire_ctor();
         for edge in occt_edges {
@@ -42,7 +42,7 @@ impl Sketch {
         let face_shape = ffi::cast_face_to_shape(face);
         let mut make_solid = ffi::BRepPrimAPI_MakePrism_ctor(
             face_shape,
-            &self.plane.normal_to_occt_vec(thickness),
+            &(self.plane.normal() * thickness.m()).to_occt(),
             false,
             true,
         );
@@ -77,6 +77,19 @@ mod tests {
         assert!(
             sketch.extrude(Length::from_m(3.))
                 == Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 2., 3.))
+        )
+    }
+
+    #[test]
+    fn extrude_cube_different_plane() {
+        let sketch = Sketch::new(Plane::xz())
+            .line_to(Point2D::from_m(1., 0.))
+            .line_to(Point2D::from_m(1., 2.))
+            .line_to(Point2D::from_m(0., 2.))
+            .line_to(Point2D::origin());
+        assert_eq!(
+            sketch.extrude(Length::from_m(3.)),
+            Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 3., 2.))
         )
     }
 }

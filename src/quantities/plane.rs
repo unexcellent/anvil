@@ -1,47 +1,32 @@
-use cxx::UniquePtr;
-use opencascade_sys::ffi;
-
 use crate::Error;
 
-use super::{Length, Point3D, vec3::Vec3};
+use super::{Point3D, vec3::Vec3};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Plane {
     origin: Point3D,
-    normal: Vec3,
-    x_direction: Vec3,
+    x_axis: Vec3,
+    y_axis: Vec3,
 }
 impl Plane {
     pub fn xy() -> Self {
-        Self {
-            origin: Point3D::origin(),
-            normal: Vec3::from((0., 0., 1.)),
-            x_direction: Vec3::from((1., 0., 0.)),
-        }
+        Self::new(Point3D::origin(), (1., 0., 0.), (0., 1., 0.)).expect("error in axis def")
     }
     pub fn xz() -> Self {
-        Self {
-            origin: Point3D::origin(),
-            normal: Vec3::from((0., 1., 0.)),
-            x_direction: Vec3::from((1., 0., 0.)),
-        }
+        Self::new(Point3D::origin(), (1., 0., 0.), (0., 0., 1.)).expect("error in axis def")
     }
     pub fn yz() -> Self {
-        Self {
-            origin: Point3D::origin(),
-            normal: Vec3::from((1., 0., 0.)),
-            x_direction: Vec3::from((0., 1., 0.)),
-        }
+        Self::new(Point3D::origin(), (0., 1., 0.), (0., 0., 1.)).expect("error in axis def")
     }
     pub fn new(
         origin: Point3D,
-        normal: (f64, f64, f64),
-        x_direction: (f64, f64, f64),
+        x_axis: (f64, f64, f64),
+        y_axis: (f64, f64, f64),
     ) -> Result<Self, Error> {
         Ok(Self {
             origin,
-            normal: Vec3::from(normal).normalize()?,
-            x_direction: Vec3::from(x_direction).normalize()?,
+            x_axis: Vec3::from(x_axis).normalize()?,
+            y_axis: Vec3::from(y_axis).normalize()?,
         })
     }
 
@@ -49,17 +34,12 @@ impl Plane {
         self.origin
     }
     pub fn normal(&self) -> Vec3 {
-        self.normal
+        self.y_axis.cross(self.x_axis)
     }
-    pub fn basis(&self) -> (Vec3, Vec3) {
-        (self.x_direction, self.normal.cross(self.x_direction))
+    pub fn x_axis(&self) -> Vec3 {
+        self.x_axis
     }
-
-    pub(crate) fn normal_to_occt_vec(&self, mag: Length) -> UniquePtr<ffi::gp_Vec> {
-        ffi::new_vec(
-            self.normal.x * mag.m(),
-            self.normal.y * mag.m(),
-            self.normal.z * mag.m(),
-        )
+    pub fn y_axis(&self) -> Vec3 {
+        self.y_axis
     }
 }

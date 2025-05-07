@@ -2,7 +2,7 @@ use std::ops::{Add, Div, Mul, Sub};
 
 use crate::Length;
 
-use super::{Plane, Point3D, vec3::Vec3};
+use super::{Plane, Point3D};
 
 /// A location in two-dimensional space.
 #[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
@@ -54,8 +54,7 @@ impl Point2D {
     }
 
     pub fn to_3d(&self, plane: &Plane) -> Point3D {
-        let (orth1, orth2) = plane.basis();
-        plane.origin() + orth1 * self.x + orth2 * self.y
+        plane.origin() + plane.x_axis() * self.x + plane.y_axis() * self.y
     }
 }
 
@@ -142,7 +141,7 @@ mod tests {
 
     #[test]
     fn to_3d_different_point() {
-        let plane = Plane::new(Point3D::origin(), (1., 0., 1.), (1., 0., -1.)).unwrap();
+        let plane = Plane::new(Point3D::origin(), (1., 0., -1.), (0., 1., 0.)).unwrap();
         let point = Point2D::from_mm(f64::sqrt(2.), 5.);
 
         let right = Point3D::from_mm(1., 5., -1.);

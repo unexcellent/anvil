@@ -1,5 +1,8 @@
 use std::ops::Mul;
 
+use cxx::UniquePtr;
+use opencascade_sys::ffi;
+
 use crate::Error;
 
 use super::{Length, Point3D};
@@ -43,22 +46,40 @@ impl Vec3 {
             z: self.x * other.y - self.y * other.x,
         }
     }
-}
 
-impl Mul<Vec3> for Length {
-    type Output = Point3D;
-    fn mul(self, other: Vec3) -> Point3D {
-        Point3D {
-            x: self * other.x,
-            y: self * other.y,
-            z: self * other.z,
-        }
+    pub(crate) fn to_occt(&self) -> UniquePtr<ffi::gp_Vec> {
+        ffi::new_vec(self.x, self.y, self.z)
     }
 }
 
 impl Mul<Length> for Vec3 {
     type Output = Point3D;
     fn mul(self, other: Length) -> Point3D {
+        Point3D {
+            x: self.x * other,
+            y: self.y * other,
+            z: self.z * other,
+        }
+    }
+}
+
+impl Mul<Vec3> for Length {
+    type Output = Point3D;
+    fn mul(self, other: Vec3) -> Point3D {
+        other * self
+    }
+}
+
+impl Mul<f64> for Vec3 {
+    type Output = Vec3;
+    fn mul(self, other: f64) -> Vec3 {
+        Vec3::from((self.x * other, self.y * other, self.z * other))
+    }
+}
+
+impl Mul<Vec3> for f64 {
+    type Output = Vec3;
+    fn mul(self, other: Vec3) -> Vec3 {
         other * self
     }
 }
