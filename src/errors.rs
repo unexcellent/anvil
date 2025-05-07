@@ -14,6 +14,7 @@ pub enum Error {
     StlWrite(PathBuf),
 
     ZeroVector(Vec3),
+    VectorsNotOrthogonal(Vec3, Vec3),
 }
 impl StdError for Error {}
 impl fmt::Display for Error {

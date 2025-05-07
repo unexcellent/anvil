@@ -1,7 +1,7 @@
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
 
-use crate::{Length, Plane, Point2D, Point3D};
+use crate::{Plane, Point2D};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Edge {

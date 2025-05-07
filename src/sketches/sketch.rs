@@ -74,9 +74,9 @@ mod tests {
             .line_to(Point2D::from_m(1., 2.))
             .line_to(Point2D::from_m(0., 2.))
             .line_to(Point2D::origin());
-        assert!(
-            sketch.extrude(Length::from_m(3.))
-                == Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 2., 3.))
+        assert_eq!(
+            sketch.extrude(Length::from_m(3.)),
+            Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 2., 3.))
         )
     }
 
@@ -88,7 +88,7 @@ mod tests {
             .line_to(Point2D::from_m(0., 2.))
             .line_to(Point2D::origin());
         assert_eq!(
-            sketch.extrude(Length::from_m(3.)),
+            sketch.extrude(Length::from_m(-3.)),
             Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 3., 2.))
         )
     }
