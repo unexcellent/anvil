@@ -10,6 +10,9 @@ pub enum Error {
     /// Occurs when a `Part` could not be written to a .step file at a given path.
     StepWrite(PathBuf),
 
+    /// Occurs when a `Part` could not be written to a .stl file at a given path.
+    StlWrite(PathBuf),
+
     ZeroVector(Vec3),
 }
 impl StdError for Error {}

@@ -1,7 +1,13 @@
-use std::path::Path;
+use std::{
+    fmt::Debug,
+    fs,
+    io::{self, BufRead},
+    path::Path,
+};
 
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
+use tempfile::NamedTempFile;
 
 use crate::{Error, Length, Point3D};
 
@@ -190,23 +196,19 @@ impl Part {
         }
     }
 
-    /// Write a the part to a file in the STEP format.
+    /// Write the `Part` to a file in the STEP format.
     pub fn write_step(&self, path: impl AsRef<Path>) -> Result<(), Error> {
         match &self.inner {
             Some(inner) => {
                 let mut writer = ffi::STEPControl_Writer_ctor();
-
                 let status = ffi::transfer_shape(writer.pin_mut(), inner);
-
                 if status != ffi::IFSelect_ReturnStatus::IFSelect_RetDone {
                     return Err(Error::StepWrite(path.as_ref().to_path_buf()));
                 }
-
                 let status = ffi::write_step(
                     writer.pin_mut(),
                     path.as_ref().to_string_lossy().to_string(),
                 );
-
                 if status != ffi::IFSelect_ReturnStatus::IFSelect_RetDone {
                     return Err(Error::StepWrite(path.as_ref().to_path_buf()));
                 }
@@ -214,6 +216,46 @@ impl Part {
             None => return Err(Error::EmptyPart),
         }
         Ok(())
+    }
+
+    /// Write the `Part` to a file in the STL format.
+    pub fn write_stl(&self, path: impl AsRef<Path>) -> Result<(), Error> {
+        match &self.inner {
+            Some(inner) => {
+                let mut writer = ffi::StlAPI_Writer_ctor();
+                let mesh = ffi::BRepMesh_IncrementalMesh_ctor(inner, 0.0001);
+                let success = ffi::write_stl(
+                    writer.pin_mut(),
+                    mesh.Shape(),
+                    path.as_ref().to_string_lossy().to_string(),
+                );
+                if success {
+                    Ok(())
+                } else {
+                    Err(Error::StlWrite(path.as_ref().to_path_buf()))
+                }
+            }
+            None => Err(Error::EmptyPart),
+        }
+    }
+    pub fn stl(&self) -> Result<Vec<String>, Error> {
+        match &self.inner {
+            Some(_) => {
+                let temp_file = NamedTempFile::new().expect("could not create tempfile");
+                let path = temp_file.path();
+
+                self.write_stl(path)?;
+
+                let file = fs::File::open(path).map_err(|_| Error::StlWrite(path.into()))?;
+                let lines = io::BufReader::new(file)
+                    .lines()
+                    .collect::<Result<Vec<_>, _>>()
+                    .map_err(|_| Error::StlWrite(path.into()))?;
+
+                Ok(lines)
+            }
+            None => Err(Error::EmptyPart),
+        }
     }
 }
 
@@ -239,6 +281,14 @@ impl PartialEq for Part {
             (None, Some(_)) => false,
             (None, None) => true,
         }
+    }
+}
+
+impl Debug for Part {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Shape")
+            .field("stl", &self.stl().expect(""))
+            .finish()
     }
 }
 
@@ -314,5 +364,15 @@ mod tests {
     fn centre_of_mass_not_at_origin() {
         let cuboid = Cuboid::from_corners(Point3D::from_m(0., 0., 0.), Point3D::from_m(2., 2., 2.));
         assert_eq!(cuboid.center_of_mass(), Ok(Point3D::from_m(1., 1., 1.)))
+    }
+
+    #[test]
+    fn write_stl() {
+        let cuboid = Cuboid::from_m(1., 2., 3.);
+        assert!(
+            cuboid
+                .write_stl("/Users/tk/user/dev/anvil/local/out.stl")
+                .is_ok()
+        );
     }
 }
