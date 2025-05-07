@@ -40,8 +40,12 @@ impl Sketch {
         let face = make_face.Face();
 
         let face_shape = ffi::cast_face_to_shape(face);
-        let mut make_solid =
-            ffi::BRepPrimAPI_MakePrism_ctor(face_shape, &self.plane.to_occt_vec(), false, true);
+        let mut make_solid = ffi::BRepPrimAPI_MakePrism_ctor(
+            face_shape,
+            &self.plane.normal_to_occt_vec(thickness),
+            false,
+            true,
+        );
 
         Part::from_occt(make_solid.pin_mut().Shape())
     }
@@ -67,12 +71,12 @@ mod tests {
     fn extrude_cube() {
         let sketch = Sketch::new(Plane::xy())
             .line_to(Point2D::from_m(1., 0.))
-            .line_to(Point2D::from_m(1., 1.))
-            .line_to(Point2D::from_m(0., 1.))
+            .line_to(Point2D::from_m(1., 2.))
+            .line_to(Point2D::from_m(0., 2.))
             .line_to(Point2D::origin());
         assert!(
-            sketch.extrude(Length::from_m(1.))
-                == Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 1.))
+            sketch.extrude(Length::from_m(3.))
+                == Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 2., 3.))
         )
     }
 }

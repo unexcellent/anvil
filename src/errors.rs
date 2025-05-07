@@ -1,5 +1,7 @@
 use std::{error::Error as StdError, fmt, path::PathBuf};
 
+use crate::quantities::Vec3;
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Error {
     /// Occurs when a function that requires a non-empty `Part` is called on an empty one.
@@ -7,6 +9,8 @@ pub enum Error {
 
     /// Occurs when a `Part` could not be written to a .step file at a given path.
     StepWrite(PathBuf),
+
+    ZeroVector(Vec3),
 }
 impl StdError for Error {}
 impl fmt::Display for Error {

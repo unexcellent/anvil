@@ -2,6 +2,8 @@ use std::ops::{Add, Div, Mul, Sub};
 
 use crate::Length;
 
+use super::{Plane, Point3D, vec3::Vec3};
+
 /// A location in two-dimensional space.
 #[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
 pub struct Point2D {
@@ -49,6 +51,11 @@ impl Point2D {
             x: Length::from_m(x),
             y: Length::from_m(y),
         }
+    }
+
+    pub fn to_3d(&self, plane: &Plane) -> Point3D {
+        let (orth1, orth2) = plane.basis();
+        plane.origin() + orth1 * self.x + orth2 * self.y
     }
 }
 
@@ -115,5 +122,32 @@ mod tests {
     #[test]
     fn divide() {
         assert_eq!(Point2D::from_m(4., 8.) / 4., Point2D::from_m(1., 2.));
+    }
+
+    #[test]
+    fn to_3d_origin() {
+        let plane = Plane::new(Point3D::from_m(1., 2., 3.), (1., 1., 0.), (0., 0., 1.)).unwrap();
+        let point = Point2D::origin();
+
+        assert_eq!(point.to_3d(&plane), plane.origin());
+    }
+
+    #[test]
+    fn to_3d_straight_plane() {
+        let plane = Plane::xy();
+        let point = Point2D::from_m(1., 2.);
+
+        assert_eq!(point.to_3d(&plane), Point3D::from_m(1., 2., 0.));
+    }
+
+    #[test]
+    fn to_3d_different_point() {
+        let plane = Plane::new(Point3D::origin(), (1., 0., 1.), (1., 0., -1.)).unwrap();
+        let point = Point2D::from_mm(f64::sqrt(2.), 5.);
+
+        let right = Point3D::from_mm(1., 5., -1.);
+        assert!((point.to_3d(&plane).x.m() - right.x.m()).abs() < 1e-9);
+        assert!((point.to_3d(&plane).y.m() - right.y.m()).abs() < 1e-9);
+        assert!((point.to_3d(&plane).z.m() - right.z.m()).abs() < 1e-9);
     }
 }
