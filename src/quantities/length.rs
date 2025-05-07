@@ -9,6 +9,18 @@ pub struct Length {
     mm: f64,
 }
 impl Length {
+    /// Construct a `Length` with a value of zero.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::Length;
+    ///
+    /// let len = Length::zero();
+    /// assert_eq!(len.m(), 0.);
+    /// ```
+    pub fn zero() -> Self {
+        Self { mm: 0. }
+    }
     /// Construct a `Length` from a value of unit millimeters.
     ///
     /// # Example

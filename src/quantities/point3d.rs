@@ -1,5 +1,8 @@
 use std::ops::{Add, Div, Mul, Sub};
 
+use cxx::UniquePtr;
+use opencascade_sys::ffi;
+
 use crate::Length;
 
 /// A location in three-dimensional space.
@@ -10,6 +13,10 @@ pub struct Point3D {
     pub z: Length,
 }
 impl Point3D {
+    pub(crate) fn to_occt_point(&self) -> UniquePtr<ffi::gp_Pnt> {
+        ffi::new_point(self.x.m(), self.y.m(), self.z.m())
+    }
+
     /// The origin point at the position x=0, y=0, z=0.
     pub fn origin() -> Self {
         Self::from_mm(0., 0., 0.)
