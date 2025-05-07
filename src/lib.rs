@@ -9,4 +9,4 @@ pub use parts::{
     Part,
     primitives::{Cuboid, Cylinder, Sphere},
 };
-pub use quantities::{Length, Point2D, Point3D};
+pub use quantities::{Length, Plane, Point2D, Point3D};
