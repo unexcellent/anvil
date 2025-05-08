@@ -141,7 +141,7 @@ impl Part {
         }
     }
 
-    /// Return the volume occupied by this `Part` in square meters.
+    /// Return the volume occupied by this `Part` in cubic meters.
     ///
     /// Warning: the volume is susceptibility to floating point errors.
     ///

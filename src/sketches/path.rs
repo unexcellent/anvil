@@ -1,8 +1,9 @@
 use crate::Point2D;
 
-use super::Edge;
+use super::{Edge, Sketch};
 
 /// A continuous series of edges (i.e. lines, arcs, ...).
+#[derive(Debug, PartialEq, Clone)]
 pub struct Path {
     cursor: Point2D,
     edges: Vec<Edge>,
@@ -35,6 +36,14 @@ impl Path {
     /// ```
     pub fn line_to(&self, point: Point2D) -> Self {
         self.add_edge(Edge::Line(self.cursor, point))
+    }
+
+    pub fn close(self) -> Sketch {
+        if self.start() == self.end() {
+            Sketch(self.edges)
+        } else {
+            Sketch(self.line_to(self.start()).edges)
+        }
     }
 
     /// Return the starting point of the `Path`.

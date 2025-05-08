@@ -3,7 +3,7 @@ use opencascade_sys::ffi;
 
 use crate::{Plane, Point2D};
 
-/// TODO
+/// A one-dimensional object in two-dimensional space.
 #[derive(Debug, PartialEq, Clone)]
 pub enum Edge {
     Line(Point2D, Point2D),
