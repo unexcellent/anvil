@@ -14,7 +14,7 @@ impl Sphere {
     /// use anvil::{Sphere, Length, Point3D, Part};
     ///
     /// let part = Sphere::from_radius(Length::from_m(1.));
-    /// assert_eq!(part.center_of_mass(), Ok(Point3D::origin()));
+    /// assert_eq!(part.center(), Ok(Point3D::origin()));
     /// assert!((part.volume() - 4.18879).abs() < 1e-5);
     /// ```
     pub fn from_radius(radius: Length) -> Part {
@@ -31,7 +31,7 @@ impl Sphere {
     /// use anvil::{Sphere, Length, Point3D, Part};
     ///
     /// let part = Sphere::from_diameter(Length::from_m(1.));
-    /// assert_eq!(part.center_of_mass(), Ok(Point3D::origin()));
+    /// assert_eq!(part.center(), Ok(Point3D::origin()));
     /// assert!((part.volume() - 0.523599).abs() < 1e-5);
     /// ```
     pub fn from_diameter(diameter: Length) -> Part {

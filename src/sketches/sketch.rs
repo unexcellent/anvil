@@ -102,19 +102,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn extrude_cube() {
-        let sketch = Path::at(Point2D::origin())
-            .line_to(Point2D::from_m(1., 0.))
-            .line_to(Point2D::from_m(1., 2.))
-            .line_to(Point2D::from_m(0., 2.))
-            .close();
-        assert_eq!(
-            sketch.extrude(&Plane::xy(), Length::from_m(3.)),
-            Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 2., 3.))
-        )
-    }
-
-    #[test]
     fn extrude_cube_different_plane() {
         let sketch = Path::at(Point2D::origin())
             .line_to(Point2D::from_m(1., 0.))

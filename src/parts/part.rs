@@ -116,8 +116,8 @@ impl Part {
     ///
     /// let cuboid = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
     /// let moved_cuboid = cuboid.move_to(Point3D::from_m(2., 2., 2.));
-    /// assert_eq!(cuboid.center_of_mass(), Ok(Point3D::origin()));
-    /// assert_eq!(moved_cuboid.center_of_mass(), Ok(Point3D::from_m(2., 2., 2.)));
+    /// assert_eq!(cuboid.center(), Ok(Point3D::origin()));
+    /// assert_eq!(moved_cuboid.center(), Ok(Point3D::from_m(2., 2., 2.)));
     /// ```
     pub fn move_to(&self, loc: Point3D) -> Self {
         match &self.inner {
@@ -171,13 +171,13 @@ impl Part {
     /// use anvil::{Cuboid, Length, Point3D};
     ///
     /// let centered_cuboid = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
-    /// assert_eq!(centered_cuboid.center_of_mass(), Ok(Point3D::origin()));
+    /// assert_eq!(centered_cuboid.center(), Ok(Point3D::origin()));
     ///
     /// let non_centered_cuboid = Cuboid::from_corners(
     ///     Point3D::from_m(0., 0., 0.),
     ///     Point3D::from_m(2., 2., 2.)
     /// );
-    /// assert_eq!(non_centered_cuboid.center_of_mass(), Ok(Point3D::from_m(1., 1., 1.)));
+    /// assert_eq!(non_centered_cuboid.center(), Ok(Point3D::from_m(1., 1., 1.)));
     /// ```
     pub fn center(&self) -> Result<Point3D, Error> {
         match &self.inner {

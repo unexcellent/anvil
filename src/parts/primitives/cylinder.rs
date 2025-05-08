@@ -14,7 +14,7 @@ impl Cylinder {
     /// use anvil::{Cylinder, Length, Point3D, Part};
     ///
     /// let part = Cylinder::from_radius(Length::from_m(1.), Length::from_m(2.));
-    /// assert_eq!(part.center_of_mass(), Ok(Point3D::origin()));
+    /// assert_eq!(part.center(), Ok(Point3D::origin()));
     /// assert!((part.volume() - 6.28319).abs() < 1e-5);
     /// ```
     pub fn from_radius(radius: Length, height: Length) -> Part {
@@ -36,7 +36,7 @@ impl Cylinder {
     /// use anvil::{Cylinder, Length, Point3D, Part};
     ///
     /// let part = Cylinder::from_diameter(Length::from_m(1.), Length::from_m(2.));
-    /// assert_eq!(part.center_of_mass(), Ok(Point3D::origin()));
+    /// assert_eq!(part.center(), Ok(Point3D::origin()));
     /// assert!((part.volume() - 1.57080).abs() < 1e-5);
     /// ```
     pub fn from_diameter(diameter: Length, height: Length) -> Part {

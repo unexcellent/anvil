@@ -15,7 +15,7 @@ impl Cuboid {
     /// use anvil::{Cuboid, Length, Point3D, Part};
     ///
     /// let part = Cuboid::from_dim(Length::from_m(1.), Length::from_m(2.), Length::from_m(3.));
-    /// assert_eq!(part.center_of_mass(), Ok(Point3D::origin()));
+    /// assert_eq!(part.center(), Ok(Point3D::origin()));
     /// assert!((part.volume() - 6.).abs() < 1e-5);
     /// ```
     pub fn from_dim(x: Length, y: Length, z: Length) -> Part {
@@ -39,7 +39,7 @@ impl Cuboid {
     /// use anvil::{Cuboid, Length, Point3D, Part};
     ///
     /// let part = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(2., 2., 2.));
-    /// assert_eq!(part.center_of_mass(), Ok(Point3D::from_m(1., 1., 1.)));
+    /// assert_eq!(part.center(), Ok(Point3D::from_m(1., 1., 1.)));
     /// assert!((part.volume() - 8.).abs() < 1e-5);
     /// ```
     pub fn from_corners(corner1: Point3D, corner2: Point3D) -> Part {
