@@ -1,7 +1,7 @@
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
 
-use crate::{Length, Part, Plane};
+use crate::{Error, Length, Part, Plane};
 
 use super::Edge;
 
@@ -21,14 +21,9 @@ impl Sketch {
         Self(vec![])
     }
 
-    /// Return the edges that make up this `Sketch`.
-    pub fn edges(&self) -> &Vec<Edge> {
-        &self.0
-    }
-
-    /// Return true if this `Sketch` contains no edges.
+    /// Return true if this `Sketch` is empty.
     pub fn is_empty(&self) -> bool {
-        self.edges().is_empty()
+        self.to_occt(&Plane::xy()).is_err()
     }
 
     /// Return the area occupied by this `Sketch` in square meters.
@@ -49,7 +44,11 @@ impl Sketch {
 
         let mut gprops = ffi::GProp_GProps_ctor();
         ffi::BRepGProp_SurfaceProperties(
-            ffi::cast_face_to_shape(&self.to_occt(&Plane::xy())),
+            ffi::cast_face_to_shape(
+                &self
+                    .to_occt(&Plane::xy())
+                    .expect("sketch was checked for emptyness before"),
+            ),
             gprops.pin_mut(),
         );
         gprops.Mass()
@@ -64,11 +63,11 @@ impl Sketch {
     /// let sketch = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(1., 2.));
     /// assert_eq!(
     ///     sketch.extrude(&Plane::xy(), Length::from_m(3.)),
-    ///     Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 2., 3.))
+    ///     Ok(Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 2., 3.)))
     /// );
     /// ```
-    pub fn extrude(&self, plane: &Plane, thickness: Length) -> Part {
-        let face = self.to_occt(plane);
+    pub fn extrude(&self, plane: &Plane, thickness: Length) -> Result<Part, Error> {
+        let face = self.to_occt(plane)?;
         let face_shape = ffi::cast_face_to_shape(&face);
         let mut make_solid = ffi::BRepPrimAPI_MakePrism_ctor(
             face_shape,
@@ -77,11 +76,22 @@ impl Sketch {
             true,
         );
 
-        Part::from_occt(make_solid.pin_mut().Shape())
+        Ok(Part::from_occt(make_solid.pin_mut().Shape()))
     }
 
-    pub(crate) fn to_occt(&self, plane: &Plane) -> UniquePtr<ffi::TopoDS_Face> {
-        let occt_edges = self.edges().iter().map(|edge| edge.to_occt(plane));
+    pub(crate) fn to_occt(&self, plane: &Plane) -> Result<UniquePtr<ffi::TopoDS_Face>, Error> {
+        self.edges_to_occt(plane)
+    }
+
+    pub(crate) fn edges_to_occt(
+        &self,
+        plane: &Plane,
+    ) -> Result<UniquePtr<ffi::TopoDS_Face>, Error> {
+        if self.0.is_empty() {
+            return Err(Error::EmptySketch);
+        }
+
+        let occt_edges = self.0.iter().map(|edge| edge.to_occt(plane));
 
         let mut make_wire = ffi::BRepBuilderAPI_MakeWire_ctor();
         for edge in occt_edges {
@@ -91,7 +101,7 @@ impl Sketch {
 
         let make_face = ffi::BRepBuilderAPI_MakeFace_wire(&wire, false);
         let face = make_face.Face();
-        ffi::TopoDS_Face_to_owned(face)
+        Ok(ffi::TopoDS_Face_to_owned(face))
     }
 }
 
@@ -102,6 +112,15 @@ mod tests {
     use super::*;
 
     #[test]
+    fn extrude_empty_sketch() {
+        let sketch = Sketch::empty();
+        assert_eq!(
+            sketch.extrude(&Plane::xy(), Length::from_m(5.)),
+            Err(Error::EmptySketch)
+        )
+    }
+
+    #[test]
     fn extrude_cube_different_plane() {
         let sketch = Path::at(Point2D::origin())
             .line_to(Point2D::from_m(1., 0.))
@@ -110,7 +129,10 @@ mod tests {
             .close();
         assert_eq!(
             sketch.extrude(&Plane::xz(), Length::from_m(-3.)),
-            Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 3., 2.))
+            Ok(Cuboid::from_corners(
+                Point3D::origin(),
+                Point3D::from_m(1., 3., 2.)
+            ))
         )
     }
 
@@ -119,8 +141,10 @@ mod tests {
         let sketch = Circle::from_radius(Length::from_m(1.));
         assert_eq!(
             sketch.extrude(&Plane::xy(), Length::from_m(2.)),
-            Cylinder::from_radius(Length::from_m(1.), Length::from_m(2.))
-                .move_to(Point3D::from_m(0., 0., 1.))
+            Ok(
+                Cylinder::from_radius(Length::from_m(1.), Length::from_m(2.))
+                    .move_to(Point3D::from_m(0., 0., 1.))
+            )
         )
     }
 }
