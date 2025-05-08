@@ -1,3 +1,5 @@
+use std::vec;
+
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
 
@@ -5,8 +7,8 @@ use crate::{Error, Length, Part, Plane};
 
 use super::Edge;
 
-#[derive(Default, Debug, PartialEq, Clone)]
-pub struct Sketch(pub(crate) Vec<Edge>);
+#[derive(Debug, PartialEq, Clone)]
+pub struct Sketch(Vec<SketchAction>);
 impl Sketch {
     /// Construct an empty `Sketch` which can be used for merging with other sketches.
     ///
@@ -79,29 +81,57 @@ impl Sketch {
         Ok(Part::from_occt(make_solid.pin_mut().Shape()))
     }
 
-    pub(crate) fn to_occt(&self, plane: &Plane) -> Result<UniquePtr<ffi::TopoDS_Face>, Error> {
-        self.edges_to_occt(plane)
+    pub(crate) fn from_edges(edges: Vec<Edge>) -> Self {
+        Self(vec![SketchAction::AddEdges(edges)])
     }
 
-    pub(crate) fn edges_to_occt(
+    pub(crate) fn to_occt(&self, plane: &Plane) -> Result<UniquePtr<ffi::TopoDS_Face>, Error> {
+        let mut occt = None;
+        for action in &self.0 {
+            occt = action.apply(occt, plane);
+        }
+
+        match occt {
+            Some(face) => Ok(face),
+            None => Err(Error::EmptySketch),
+        }
+    }
+}
+
+fn edges_to_occt(edges: &Vec<Edge>, plane: &Plane) -> Result<UniquePtr<ffi::TopoDS_Face>, Error> {
+    if edges.is_empty() {
+        return Err(Error::EmptySketch);
+    }
+
+    let occt_edges = edges.iter().map(|edge| edge.to_occt(plane));
+
+    let mut make_wire = ffi::BRepBuilderAPI_MakeWire_ctor();
+    for edge in occt_edges {
+        make_wire.pin_mut().add_edge(&edge)
+    }
+    let wire = ffi::TopoDS_Wire_to_owned(make_wire.pin_mut().Wire());
+
+    let make_face = ffi::BRepBuilderAPI_MakeFace_wire(&wire, false);
+    let face = make_face.Face();
+    Ok(ffi::TopoDS_Face_to_owned(face))
+}
+
+#[derive(Debug, PartialEq, Clone)]
+enum SketchAction {
+    AddEdges(Vec<Edge>),
+}
+impl SketchAction {
+    pub fn apply(
         &self,
+        sketch: Option<UniquePtr<ffi::TopoDS_Face>>,
         plane: &Plane,
-    ) -> Result<UniquePtr<ffi::TopoDS_Face>, Error> {
-        if self.0.is_empty() {
-            return Err(Error::EmptySketch);
+    ) -> Option<UniquePtr<ffi::TopoDS_Face>> {
+        match self {
+            SketchAction::AddEdges(edges) => match sketch {
+                None => edges_to_occt(edges, plane).ok(),
+                Some(_) => todo!(),
+            },
         }
-
-        let occt_edges = self.0.iter().map(|edge| edge.to_occt(plane));
-
-        let mut make_wire = ffi::BRepBuilderAPI_MakeWire_ctor();
-        for edge in occt_edges {
-            make_wire.pin_mut().add_edge(&edge)
-        }
-        let wire = ffi::TopoDS_Wire_to_owned(make_wire.pin_mut().Wire());
-
-        let make_face = ffi::BRepBuilderAPI_MakeFace_wire(&wire, false);
-        let face = make_face.Face();
-        Ok(ffi::TopoDS_Face_to_owned(face))
     }
 }
 

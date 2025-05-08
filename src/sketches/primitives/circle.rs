@@ -7,6 +7,6 @@ use crate::{Edge, Length, Path, Point2D, Sketch};
 pub struct Circle;
 impl Circle {
     pub fn from_radius(radius: Length) -> Sketch {
-        Sketch(vec![Edge::Circle(Point2D::origin(), radius)])
+        Sketch::from_edges(vec![Edge::Circle(Point2D::origin(), radius)])
     }
 }

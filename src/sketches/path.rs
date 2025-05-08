@@ -40,9 +40,9 @@ impl Path {
 
     pub fn close(self) -> Sketch {
         if self.start() == self.end() {
-            Sketch(self.edges)
+            Sketch::from_edges(self.edges)
         } else {
-            Sketch(self.line_to(self.start()).edges)
+            Sketch::from_edges(self.line_to(self.start()).edges)
         }
     }
 
