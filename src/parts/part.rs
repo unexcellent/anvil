@@ -162,7 +162,7 @@ impl Part {
             None => 0.,
         }
     }
-    /// Return the center of all points of the `Part`.
+    /// Return the center of mass of the `Part`.
     ///
     /// If the `Part` is empty, an `Err(Error::EmptyPart)` is returned.
     ///
@@ -179,7 +179,7 @@ impl Part {
     /// );
     /// assert_eq!(non_centered_cuboid.center_of_mass(), Ok(Point3D::from_m(1., 1., 1.)));
     /// ```
-    pub fn center_of_mass(&self) -> Result<Point3D, Error> {
+    pub fn center(&self) -> Result<Point3D, Error> {
         match &self.inner {
             Some(inner) => {
                 let mut gprops = ffi::GProp_GProps_ctor();
@@ -344,8 +344,8 @@ mod tests {
         let loc = Point3D::from_m(2., 2., 2.);
         let cuboid2 = cuboid1.move_to(loc);
 
-        assert_eq!(cuboid1.center_of_mass(), Ok(Point3D::origin()));
-        assert_eq!(cuboid2.center_of_mass(), Ok(loc));
+        assert_eq!(cuboid1.center(), Ok(Point3D::origin()));
+        assert_eq!(cuboid2.center(), Ok(loc));
     }
 
     #[test]
@@ -357,13 +357,13 @@ mod tests {
     #[test]
     fn centre_of_mass_at_origin() {
         let cuboid = Cuboid::from_m(1., 1., 1.);
-        assert_eq!(cuboid.center_of_mass(), Ok(Point3D::from_m(0., 0., 0.)))
+        assert_eq!(cuboid.center(), Ok(Point3D::from_m(0., 0., 0.)))
     }
 
     #[test]
     fn centre_of_mass_not_at_origin() {
         let cuboid = Cuboid::from_corners(Point3D::from_m(0., 0., 0.), Point3D::from_m(2., 2., 2.));
-        assert_eq!(cuboid.center_of_mass(), Ok(Point3D::from_m(1., 1., 1.)))
+        assert_eq!(cuboid.center(), Ok(Point3D::from_m(1., 1., 1.)))
     }
 
     #[test]
