@@ -82,7 +82,7 @@ impl Part {
             _ => Part { inner: None },
         }
     }
-    /// Return a copy of this `Part` with the intersection with another removed.
+    /// Return a copy of this `Part` with the intersection of another removed.
     ///
     /// # Example
     /// ```rust

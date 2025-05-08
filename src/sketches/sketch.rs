@@ -50,7 +50,7 @@ impl Sketch {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Cuboid, Length, Rectangle, Plane, Point2D, Point3D};
+    /// use anvil::{Rectangle, Point2D};
     ///
     /// let sketch1 = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(1., 2.));
     /// let sketch2 = Rectangle::from_corners(Point2D::from_m(1., 0.), Point2D::from_m(2., 2.));
@@ -69,7 +69,7 @@ impl Sketch {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Cuboid, Length, Rectangle, Plane, Point2D, Point3D};
+    /// use anvil::{Rectangle, Point2D};
     ///
     /// let sketch1 = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(2., 2.));
     /// let sketch2 = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(1., 2.));
@@ -81,6 +81,24 @@ impl Sketch {
     pub fn intersect(&self, other: &Self) -> Self {
         let mut new_actions = self.0.clone();
         new_actions.push(SketchAction::Intersect(other.clone()));
+        Self(new_actions)
+    }
+    /// Return a copy of this `Sketch` with the intersection of another removed.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Rectangle, Point2D};
+    ///
+    /// let sketch1 = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(2., 2.));
+    /// let sketch2 = Rectangle::from_corners(Point2D::from_m(1., 0.), Point2D::from_m(2., 2.));
+    /// assert_eq!(
+    ///     sketch1.subtract(&sketch2),
+    ///     Rectangle::from_corners(Point2D::origin(), Point2D::from_m(1., 2.))
+    /// )
+    /// ```
+    pub fn subtract(&self, other: &Self) -> Self {
+        let mut new_actions = self.0.clone();
+        new_actions.push(SketchAction::Subtract(other.clone()));
         Self(new_actions)
     }
 
@@ -166,6 +184,7 @@ enum SketchAction {
     Add(Sketch),
     AddEdges(Vec<Edge>),
     Intersect(Sketch),
+    Subtract(Sketch),
 }
 impl SketchAction {
     pub fn apply(
@@ -198,6 +217,15 @@ impl SketchAction {
                     }
                 }
                 _ => None,
+            },
+            SketchAction::Subtract(other) => match (sketch, other.to_occt(plane).ok()) {
+                (None, None) => None,
+                (None, Some(_)) => None,
+                (Some(sketch), None) => Some(sketch),
+                (Some(self_shape), Some(other_shape)) => {
+                    let mut operation = ffi::BRepAlgoAPI_Cut_ctor(&self_shape, &other_shape);
+                    Some(ffi::TopoDS_Shape_to_owned(operation.pin_mut().Shape()))
+                }
             },
         }
     }
