@@ -7,7 +7,7 @@ use crate::{Error, Length, Part, Plane};
 
 use super::Edge;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub struct Sketch(Vec<SketchAction>);
 impl Sketch {
     /// Construct an empty `Sketch` which can be used for merging with other sketches.
@@ -40,18 +40,10 @@ impl Sketch {
     /// assert!((sketch.area() - 6.).abs() < 1e-9)
     /// ```
     pub fn area(&self) -> f64 {
-        if self.is_empty() {
-            return 0.;
+        match self.to_occt(&Plane::xy()) {
+            Ok(occt) => occt_area(&occt),
+            Err(_) => 0.,
         }
-
-        let mut gprops = ffi::GProp_GProps_ctor();
-        ffi::BRepGProp_SurfaceProperties(
-            &self
-                .to_occt(&Plane::xy())
-                .expect("sketch was checked for emptyness before"),
-            gprops.pin_mut(),
-        );
-        gprops.Mass()
     }
 
     /// Merge this `Sketch` with another.
@@ -62,10 +54,9 @@ impl Sketch {
     ///
     /// let sketch1 = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(1., 2.));
     /// let sketch2 = Rectangle::from_corners(Point2D::from_m(1., 0.), Point2D::from_m(2., 2.));
-    /// let merged_sketch = sketch1.add(&sketch2);
     /// assert_eq!(
-    ///     merged_sketch.extrude(&Plane::xy(), Length::from_m(3.)),
-    ///     Ok(Cuboid::from_corners(Point3D::origin(), Point3D::from_m(2., 2., 3.)))
+    ///     sketch1.add(&sketch2),
+    ///     Rectangle::from_corners(Point2D::origin(), Point2D::from_m(2., 2.))
     /// )
     /// ```
     pub fn add(&self, other: &Self) -> Self {
@@ -82,10 +73,9 @@ impl Sketch {
     ///
     /// let sketch1 = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(2., 2.));
     /// let sketch2 = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(1., 2.));
-    /// let intersected_sketch = sketch1.intersect(&sketch2);
     /// assert_eq!(
-    ///     intersected_sketch.extrude(&Plane::xy(), Length::from_m(3.)),
-    ///     Ok(Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 2., 3.)))
+    ///     sketch1.intersect(&sketch2),
+    ///     Rectangle::from_corners(Point2D::origin(), Point2D::from_m(1., 2.))
     /// )
     /// ```
     pub fn intersect(&self, other: &Self) -> Self {
@@ -135,6 +125,18 @@ impl Sketch {
     }
 }
 
+impl PartialEq for Sketch {
+    fn eq(&self, other: &Self) -> bool {
+        match self.intersect(other).to_occt(&Plane::xy()) {
+            Ok(intersection) => {
+                (occt_area(&intersection) - self.area()).abs() < 1e-7
+                    && (occt_area(&intersection) - other.area()).abs() < 1e-7
+            }
+            Err(_) => false,
+        }
+    }
+}
+
 fn edges_to_occt(edges: &[Edge], plane: &Plane) -> Result<UniquePtr<ffi::TopoDS_Shape>, Error> {
     if edges.is_empty() {
         return Err(Error::EmptySketch);
@@ -151,6 +153,12 @@ fn edges_to_occt(edges: &[Edge], plane: &Plane) -> Result<UniquePtr<ffi::TopoDS_
     let make_face = ffi::BRepBuilderAPI_MakeFace_wire(&wire, false);
     let face = make_face.Face();
     Ok(ffi::TopoDS_Shape_to_owned(ffi::cast_face_to_shape(face)))
+}
+
+fn occt_area(occt: &ffi::TopoDS_Shape) -> f64 {
+    let mut gprops = ffi::GProp_GProps_ctor();
+    ffi::BRepGProp_SurfaceProperties(occt, gprops.pin_mut());
+    gprops.Mass()
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -183,10 +191,7 @@ impl SketchAction {
                 (Some(self_shape), Some(other_shape)) => {
                     let mut operation = ffi::BRepAlgoAPI_Common_ctor(&self_shape, &other_shape);
                     let new_shape = ffi::TopoDS_Shape_to_owned(operation.pin_mut().Shape());
-
-                    let mut gprops = ffi::GProp_GProps_ctor();
-                    ffi::BRepGProp_SurfaceProperties(&new_shape, gprops.pin_mut());
-                    if gprops.Mass() == 0. {
+                    if occt_area(&new_shape) == 0. {
                         None
                     } else {
                         Some(new_shape)
@@ -205,6 +210,22 @@ mod tests {
     };
 
     use super::*;
+
+    #[test]
+    fn eq_both_rectangles() {
+        assert_eq!(
+            Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.)),
+            Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.)),
+        )
+    }
+
+    #[test]
+    fn neq_both_rectangles() {
+        assert_ne!(
+            Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.)),
+            Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.1)),
+        )
+    }
 
     #[test]
     fn intersect_non_overlapping() {
