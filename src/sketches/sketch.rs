@@ -51,17 +51,20 @@ impl Sketch {
     ///
     /// # Examples
     /// ```rust
-    /// use anvil::{Length, Point2D, Rectangle};
+    /// use anvil::{Error, Length, Point2D, Rectangle, Sketch};
     ///
     /// let centered_rect = Rectangle::from_dim(Length::from_m(1.), Length::from_m(2.));
+    /// let moved_rect = centered_rect.move_to(Point2D::from_m(3., 3.));
     /// assert_eq!(centered_rect.center(), Ok(Point2D::origin()));
+    /// assert_eq!(moved_rect.center(), Ok(Point2D::from_m(3., 3.)));
+    /// assert_eq!(Sketch::empty().center(), Err(Error::EmptySketch));
     /// ```
     pub fn center(&self) -> Result<Point2D, Error> {
         let occt = self.to_occt(&Plane::xy())?;
         let mut gprops = ffi::GProp_GProps_ctor();
         ffi::BRepGProp_VolumeProperties(&occt, gprops.pin_mut());
-        let centre_of_mass = ffi::GProp_GProps_CentreOfMass(&gprops);
 
+        let centre_of_mass = ffi::GProp_GProps_CentreOfMass(&gprops);
         Ok(Point2D {
             x: Length::from_m(centre_of_mass.X()),
             y: Length::from_m(centre_of_mass.Y()),
@@ -120,6 +123,22 @@ impl Sketch {
     pub fn subtract(&self, other: &Self) -> Self {
         let mut new_actions = self.0.clone();
         new_actions.push(SketchAction::Subtract(other.clone()));
+        Self(new_actions)
+    }
+    /// Return a clone of this part with the center moved to a specified point.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Length, Point2D, Rectangle};
+    ///
+    /// let rect = Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.));
+    /// let moved_rect = rect.move_to(Point2D::from_m(2., 2.));
+    /// assert_eq!(rect.center(), Ok(Point2D::origin()));
+    /// assert_eq!(moved_rect.center(), Ok(Point2D::from_m(2., 2.)));
+    /// ```
+    pub fn move_to(&self, loc: Point2D) -> Self {
+        let mut new_actions = self.0.clone();
+        new_actions.push(SketchAction::MoveTo(loc));
         Self(new_actions)
     }
 
@@ -205,6 +224,7 @@ enum SketchAction {
     Add(Sketch),
     AddEdges(Vec<Edge>),
     Intersect(Sketch),
+    MoveTo(Point2D),
     Subtract(Sketch),
 }
 impl SketchAction {
@@ -238,6 +258,21 @@ impl SketchAction {
                     }
                 }
                 _ => None,
+            },
+            SketchAction::MoveTo(loc) => match sketch {
+                Some(shape) => {
+                    let mut transform = ffi::new_transform();
+                    transform
+                        .pin_mut()
+                        .set_translation_vec(&loc.to_3d(plane).to_occt_vec());
+                    let location = ffi::TopLoc_Location_from_transform(&transform);
+
+                    let mut new_inner = ffi::TopoDS_Shape_to_owned(&shape);
+                    new_inner.pin_mut().set_global_translation(&location, false);
+
+                    Some(new_inner)
+                }
+                None => None,
             },
             SketchAction::Subtract(other) => match (sketch, other.to_occt(plane).ok()) {
                 (None, None) => None,

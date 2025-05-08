@@ -62,6 +62,9 @@ impl Point3D {
     pub(crate) fn to_occt_point(self) -> UniquePtr<ffi::gp_Pnt> {
         ffi::new_point(self.x.m(), self.y.m(), self.z.m())
     }
+    pub(crate) fn to_occt_vec(self) -> UniquePtr<ffi::gp_Vec> {
+        ffi::new_vec(self.x.m(), self.y.m(), self.z.m())
+    }
 }
 
 impl Add<Point3D> for Point3D {
