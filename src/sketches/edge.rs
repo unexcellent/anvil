@@ -6,7 +6,10 @@ use crate::{Length, Plane, Point2D, quantities::Axis};
 /// A one-dimensional object in two-dimensional space.
 #[derive(Debug, PartialEq, Clone)]
 pub enum Edge {
+    /// A circle at a center with a radius.
     Circle(Point2D, Length),
+
+    /// A line between two points.
     Line(Point2D, Point2D),
 }
 impl Edge {

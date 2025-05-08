@@ -238,6 +238,7 @@ impl Part {
             None => Err(Error::EmptyPart),
         }
     }
+    /// Return the STL lines that describe this `Part`.
     pub fn stl(&self) -> Result<Vec<String>, Error> {
         match &self.inner {
             Some(_) => {

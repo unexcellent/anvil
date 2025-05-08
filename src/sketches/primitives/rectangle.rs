@@ -7,6 +7,15 @@ use crate::{Length, Path, Point2D, Sketch};
 pub struct Rectangle;
 impl Rectangle {
     /// Construct a centered rectangular `Sketch` from the x and y dimensions.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Length, Point2D, Rectangle};
+    ///
+    /// let rect = Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.));
+    /// assert_eq!(rect.area(), 1.);
+    /// assert_eq!(rect.center(), Ok(Point2D::origin()));
+    /// ```
     pub fn from_dim(x: Length, y: Length) -> Sketch {
         let corner1 = Point2D {
             x: x * -0.5,
@@ -19,7 +28,15 @@ impl Rectangle {
         Self::from_corners(corner1, corner2)
     }
 
-    /// Construct a centered rectangular `Sketch` from its corner locations.
+    /// Construct a rectangular `Sketch` from its corner locations.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Point2D, Rectangle};
+    ///
+    /// let rect = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(2., 2.));
+    /// assert_eq!(rect.area(), 4.);
+    /// ```
     pub fn from_corners(corner1: Point2D, corner2: Point2D) -> Sketch {
         Path::at(corner1)
             .line_to(Point2D::new(corner2.x, corner1.y))

@@ -7,6 +7,7 @@ use crate::Error;
 
 use super::{Length, Point3D};
 
+/// A unitless vector in 3D space.
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Vec3 {
     pub x: f64,
@@ -14,6 +15,7 @@ pub struct Vec3 {
     pub z: f64,
 }
 impl Vec3 {
+    /// Construct a `Vec3` from the directional components.
     pub fn from(vec: (f64, f64, f64)) -> Self {
         Vec3 {
             x: vec.0,
@@ -22,10 +24,12 @@ impl Vec3 {
         }
     }
 
+    /// Return the absolute length of this `Vec3`.
     pub fn magnitude(&self) -> f64 {
         (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt()
     }
 
+    /// Return a `Vec3` that has the same direction as this one but a magnitude of 1.
     pub fn normalize(&self) -> Result<Self, Error> {
         let mag = self.magnitude();
         if mag == 0. {
@@ -39,9 +43,11 @@ impl Vec3 {
         }
     }
 
+    /// Return the dot-product of this `Vec3` with another.
     pub fn dot(&self, other: Vec3) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
+    /// Return the cross-product of this `Vec3` with another.
     pub fn cross(&self, other: Vec3) -> Vec3 {
         Vec3 {
             x: self.y * other.z - self.z * other.y,

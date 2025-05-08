@@ -7,6 +7,7 @@ use crate::{Error, Length, Part, Plane, Point2D};
 
 use super::Edge;
 
+/// A closed shape in 2D space.
 #[derive(Debug, Clone)]
 pub struct Sketch(Vec<SketchAction>);
 impl Sketch {

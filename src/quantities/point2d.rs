@@ -7,7 +7,10 @@ use super::{Plane, Point3D};
 /// A location in two-dimensional space.
 #[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
 pub struct Point2D {
+    /// Distance of the `Point2D` to the origin on the x-axis.
     pub x: Length,
+
+    /// Distance of the `Point2D` to the origin on the y-axis.
     pub y: Length,
 }
 impl Point2D {
@@ -53,6 +56,7 @@ impl Point2D {
         }
     }
 
+    /// Return the global position of this `Point2D` given the `Plane` it is located on.
     pub fn to_3d(&self, plane: &Plane) -> Point3D {
         plane.origin() + plane.x_axis() * self.x + plane.y_axis() * self.y
     }

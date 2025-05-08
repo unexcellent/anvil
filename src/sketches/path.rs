@@ -38,6 +38,7 @@ impl Path {
         self.add_edge(Edge::Line(self.cursor, point))
     }
 
+    /// Connect the end of this `Path` to its start with a straight line and return the resulting `Sketch`.
     pub fn close(self) -> Sketch {
         if self.start() == self.end() {
             Sketch::from_edges(self.edges)

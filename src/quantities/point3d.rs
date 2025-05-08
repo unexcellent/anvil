@@ -8,8 +8,13 @@ use crate::Length;
 /// A location in three-dimensional space.
 #[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
 pub struct Point3D {
+    /// Distance of the `Point2D` to the origin on the x-axis.
     pub x: Length,
+
+    /// Distance of the `Point2D` to the origin on the y-axis.
     pub y: Length,
+
+    /// Distance of the `Point2D` to the origin on the z-axis.
     pub z: Length,
 }
 impl Point3D {

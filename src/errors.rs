@@ -2,6 +2,7 @@ use std::{error::Error as StdError, fmt, path::PathBuf};
 
 use crate::quantities::Vec3;
 
+/// The errors that can occurr.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Error {
     /// Occurs when a function that requires a non-empty `Part` is called on an empty one.
@@ -16,7 +17,10 @@ pub enum Error {
     /// Occurs when a `Part` could not be written to a .stl file at a given path.
     StlWrite(PathBuf),
 
+    /// Occurs when an operation that requires a length is performed on a `Vec3` with a magnitude of zero.
     ZeroVector(Vec3),
+
+    /// Occurs when two vectors that are required to be orthogonal, are not.
     VectorsNotOrthogonal(Vec3, Vec3),
 }
 impl StdError for Error {}

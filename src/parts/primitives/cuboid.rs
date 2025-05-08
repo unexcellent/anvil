@@ -72,6 +72,7 @@ mod tests {
     use super::*;
 
     impl Cuboid {
+        /// Constructor for simplifying tests.
         pub fn from_m(x: f64, y: f64, z: f64) -> Part {
             Cuboid::from_dim(Length::from_m(x), Length::from_m(y), Length::from_m(z))
         }
