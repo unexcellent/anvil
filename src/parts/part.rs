@@ -61,7 +61,7 @@ impl Part {
             (None, None) => self.clone(),
         }
     }
-    /// Return the part that is created from the overlapping volume between this part and another.
+    /// Return the `Part` that is created from the overlapping volume between this one and another.
     ///
     /// # Example
     /// ```rust

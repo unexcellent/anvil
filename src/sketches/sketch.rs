@@ -74,6 +74,26 @@ impl Sketch {
         Self(new_actions)
     }
 
+    /// Return the `Sketch` that is created from the overlapping area between this one and another.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Cuboid, Length, Rectangle, Plane, Point2D, Point3D};
+    ///
+    /// let sketch1 = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(2., 2.));
+    /// let sketch2 = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(1., 2.));
+    /// let intersected_sketch = sketch1.intersect(&sketch2);
+    /// assert_eq!(
+    ///     intersected_sketch.extrude(&Plane::xy(), Length::from_m(3.)),
+    ///     Ok(Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 2., 3.)))
+    /// )
+    /// ```
+    pub fn intersect(&self, other: &Self) -> Self {
+        let mut new_actions = self.0.clone();
+        new_actions.push(SketchAction::Intersect(other.clone()));
+        Self(new_actions)
+    }
+
     /// Convert this `Sketch` into a `Part` by linearly extruding it.
     ///
     /// # Example
@@ -137,6 +157,7 @@ fn edges_to_occt(edges: &[Edge], plane: &Plane) -> Result<UniquePtr<ffi::TopoDS_
 enum SketchAction {
     Add(Sketch),
     AddEdges(Vec<Edge>),
+    Intersect(Sketch),
 }
 impl SketchAction {
     pub fn apply(
@@ -145,18 +166,33 @@ impl SketchAction {
         plane: &Plane,
     ) -> Option<UniquePtr<ffi::TopoDS_Shape>> {
         match self {
-            SketchAction::AddEdges(edges) => match sketch {
-                None => edges_to_occt(edges, plane).ok(),
-                Some(_) => todo!(),
-            },
             SketchAction::Add(other) => match (sketch, other.to_occt(plane).ok()) {
                 (None, None) => None,
                 (None, Some(other)) => Some(other),
                 (Some(sketch), None) => Some(sketch),
                 (Some(self_shape), Some(other_shape)) => {
-                    let mut fuse_operation = ffi::BRepAlgoAPI_Fuse_ctor(&self_shape, &other_shape);
-                    Some(ffi::TopoDS_Shape_to_owned(fuse_operation.pin_mut().Shape()))
+                    let mut operation = ffi::BRepAlgoAPI_Fuse_ctor(&self_shape, &other_shape);
+                    Some(ffi::TopoDS_Shape_to_owned(operation.pin_mut().Shape()))
                 }
+            },
+            SketchAction::AddEdges(edges) => match sketch {
+                None => edges_to_occt(edges, plane).ok(),
+                Some(_) => todo!(),
+            },
+            SketchAction::Intersect(other) => match (sketch, other.to_occt(plane).ok()) {
+                (Some(self_shape), Some(other_shape)) => {
+                    let mut operation = ffi::BRepAlgoAPI_Common_ctor(&self_shape, &other_shape);
+                    let new_shape = ffi::TopoDS_Shape_to_owned(operation.pin_mut().Shape());
+
+                    let mut gprops = ffi::GProp_GProps_ctor();
+                    ffi::BRepGProp_SurfaceProperties(&new_shape, gprops.pin_mut());
+                    if gprops.Mass() == 0. {
+                        None
+                    } else {
+                        Some(new_shape)
+                    }
+                }
+                _ => None,
             },
         }
     }
@@ -164,9 +200,18 @@ impl SketchAction {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Cuboid, Cylinder, Path, Point2D, Point3D, sketches::primitives::Circle};
+    use crate::{
+        Cuboid, Cylinder, Path, Point2D, Point3D, Rectangle, sketches::primitives::Circle,
+    };
 
     use super::*;
+
+    #[test]
+    fn intersect_non_overlapping() {
+        let sketch1 = Rectangle::from_corners(Point2D::from_m(1., 1.), Point2D::from_m(2., 2.));
+        let sketch2 = Rectangle::from_corners(Point2D::from_m(-1., -1.), Point2D::from_m(-2., -2.));
+        assert!(sketch1.intersect(&sketch2).to_occt(&Plane::xy()).is_err())
+    }
 
     #[test]
     fn extrude_empty_sketch() {
