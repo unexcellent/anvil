@@ -21,22 +21,6 @@ impl Length {
     pub fn zero() -> Self {
         Self { mm: 0. }
     }
-    /// Construct a `Length` from a value of unit millimeters.
-    ///
-    /// # Example
-    /// ```rust
-    /// use anvil::Length;
-    ///
-    /// let len = Length::from_mm(5.4);
-    /// assert_eq!(len.m(), 0.0054);
-    /// ```
-    pub fn from_mm(value: f64) -> Self {
-        Length { mm: value }
-    }
-    /// Return the value of this length in millimeters.
-    pub fn mm(&self) -> f64 {
-        self.mm
-    }
     /// Construct a `Length` from a value of unit meters.
     ///
     /// # Example
@@ -52,6 +36,38 @@ impl Length {
     /// Return the value of this length in millimeters.
     pub fn m(&self) -> f64 {
         self.mm / 1000.
+    }
+    /// Construct a `Length` from a value of unit centimeters.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::Length;
+    ///
+    /// let len = Length::from_cm(5.4);
+    /// assert_eq!(len.mm(), 54.);
+    /// ```
+    pub fn from_cm(value: f64) -> Self {
+        Length { mm: value * 10. }
+    }
+    /// Return the value of this length in centimeters.
+    pub fn cm(&self) -> f64 {
+        self.mm / 10.
+    }
+    /// Construct a `Length` from a value of unit millimeters.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::Length;
+    ///
+    /// let len = Length::from_mm(5.4);
+    /// assert_eq!(len.m(), 0.0054);
+    /// ```
+    pub fn from_mm(value: f64) -> Self {
+        Length { mm: value }
+    }
+    /// Return the value of this length in millimeters.
+    pub fn mm(&self) -> f64 {
+        self.mm
     }
 
     /// Return the smaller of two lengths.
