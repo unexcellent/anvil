@@ -46,14 +46,32 @@ impl Sketch {
 
         let mut gprops = ffi::GProp_GProps_ctor();
         ffi::BRepGProp_SurfaceProperties(
-            ffi::cast_face_to_shape(
-                &self
-                    .to_occt(&Plane::xy())
-                    .expect("sketch was checked for emptyness before"),
-            ),
+            &self
+                .to_occt(&Plane::xy())
+                .expect("sketch was checked for emptyness before"),
             gprops.pin_mut(),
         );
         gprops.Mass()
+    }
+
+    /// Merge this `Sketch` with another.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Cuboid, Length, Rectangle, Plane, Point2D, Point3D};
+    ///
+    /// let sketch1 = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(1., 2.));
+    /// let sketch2 = Rectangle::from_corners(Point2D::from_m(1., 0.), Point2D::from_m(2., 2.));
+    /// let merged_sketch = sketch1.add(&sketch2);
+    /// assert_eq!(
+    ///     merged_sketch.extrude(&Plane::xy(), Length::from_m(3.)),
+    ///     Ok(Cuboid::from_corners(Point3D::origin(), Point3D::from_m(2., 2., 3.)))
+    /// )
+    /// ```
+    pub fn add(&self, other: &Self) -> Self {
+        let mut new_actions = self.0.clone();
+        new_actions.push(SketchAction::Add(other.clone()));
+        Self(new_actions)
     }
 
     /// Convert this `Sketch` into a `Part` by linearly extruding it.
@@ -69,10 +87,9 @@ impl Sketch {
     /// );
     /// ```
     pub fn extrude(&self, plane: &Plane, thickness: Length) -> Result<Part, Error> {
-        let face = self.to_occt(plane)?;
-        let face_shape = ffi::cast_face_to_shape(&face);
+        let shape = self.to_occt(plane)?;
         let mut make_solid = ffi::BRepPrimAPI_MakePrism_ctor(
-            face_shape,
+            &shape,
             &(plane.normal() * thickness.m()).to_occt_vec(),
             false,
             true,
@@ -85,7 +102,7 @@ impl Sketch {
         Self(vec![SketchAction::AddEdges(edges)])
     }
 
-    pub(crate) fn to_occt(&self, plane: &Plane) -> Result<UniquePtr<ffi::TopoDS_Face>, Error> {
+    pub(crate) fn to_occt(&self, plane: &Plane) -> Result<UniquePtr<ffi::TopoDS_Shape>, Error> {
         let mut occt = None;
         for action in &self.0 {
             occt = action.apply(occt, plane);
@@ -98,7 +115,7 @@ impl Sketch {
     }
 }
 
-fn edges_to_occt(edges: &Vec<Edge>, plane: &Plane) -> Result<UniquePtr<ffi::TopoDS_Face>, Error> {
+fn edges_to_occt(edges: &[Edge], plane: &Plane) -> Result<UniquePtr<ffi::TopoDS_Shape>, Error> {
     if edges.is_empty() {
         return Err(Error::EmptySketch);
     }
@@ -113,23 +130,33 @@ fn edges_to_occt(edges: &Vec<Edge>, plane: &Plane) -> Result<UniquePtr<ffi::Topo
 
     let make_face = ffi::BRepBuilderAPI_MakeFace_wire(&wire, false);
     let face = make_face.Face();
-    Ok(ffi::TopoDS_Face_to_owned(face))
+    Ok(ffi::TopoDS_Shape_to_owned(ffi::cast_face_to_shape(face)))
 }
 
 #[derive(Debug, PartialEq, Clone)]
 enum SketchAction {
+    Add(Sketch),
     AddEdges(Vec<Edge>),
 }
 impl SketchAction {
     pub fn apply(
         &self,
-        sketch: Option<UniquePtr<ffi::TopoDS_Face>>,
+        sketch: Option<UniquePtr<ffi::TopoDS_Shape>>,
         plane: &Plane,
-    ) -> Option<UniquePtr<ffi::TopoDS_Face>> {
+    ) -> Option<UniquePtr<ffi::TopoDS_Shape>> {
         match self {
             SketchAction::AddEdges(edges) => match sketch {
                 None => edges_to_occt(edges, plane).ok(),
                 Some(_) => todo!(),
+            },
+            SketchAction::Add(other) => match (sketch, other.to_occt(plane).ok()) {
+                (None, None) => None,
+                (None, Some(other)) => Some(other),
+                (Some(sketch), None) => Some(sketch),
+                (Some(self_shape), Some(other_shape)) => {
+                    let mut fuse_operation = ffi::BRepAlgoAPI_Fuse_ctor(&self_shape, &other_shape);
+                    Some(ffi::TopoDS_Shape_to_owned(fuse_operation.pin_mut().Shape()))
+                }
             },
         }
     }

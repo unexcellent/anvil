@@ -1,4 +1,4 @@
-use crate::{Edge, Length, Path, Point2D, Sketch};
+use crate::{Edge, Length, Point2D, Sketch};
 
 /// Builder for a circular `Sketch`.
 ///
