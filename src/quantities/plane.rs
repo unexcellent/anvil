@@ -1,6 +1,6 @@
 use crate::Error;
 
-use super::{Point3D, vec3::Vec3};
+use super::{Axis, Point3D, vec3::Vec3};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Plane {
@@ -42,6 +42,12 @@ impl Plane {
     }
     pub fn normal(&self) -> Vec3 {
         self.x_axis.cross(self.y_axis)
+    }
+    pub fn normal_axis(&self) -> Axis {
+        Axis {
+            origin: self.origin,
+            direction: self.normal(),
+        }
     }
     pub fn x_axis(&self) -> Vec3 {
         self.x_axis

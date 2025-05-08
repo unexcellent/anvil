@@ -1,11 +1,12 @@
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
 
-use crate::{Plane, Point2D};
+use crate::{Length, Plane, Point2D, quantities::Axis};
 
 /// A one-dimensional object in two-dimensional space.
 #[derive(Debug, PartialEq, Clone)]
 pub enum Edge {
+    Circle(Point2D, Length),
     Line(Point2D, Point2D),
 }
 impl Edge {
@@ -20,6 +21,7 @@ impl Edge {
     /// ```
     pub fn start(&self) -> Point2D {
         match self {
+            Edge::Circle(center, _) => *center,
             Edge::Line(start, _) => *start,
         }
     }
@@ -34,12 +36,22 @@ impl Edge {
     /// ```
     pub fn end(&self) -> Point2D {
         match self {
+            Edge::Circle(center, _) => *center,
             Edge::Line(_, end) => *end,
         }
     }
 
     pub(crate) fn to_occt(&self, plane: &Plane) -> UniquePtr<ffi::TopoDS_Edge> {
         match self {
+            Edge::Circle(center, radius) => {
+                let axis = Axis {
+                    origin: center.to_3d(plane),
+                    direction: plane.normal(),
+                };
+                let circle = ffi::gp_Circ_ctor(&axis.to_occt(), radius.m());
+                let mut constructor = ffi::BRepBuilderAPI_MakeEdge_circle(&circle);
+                ffi::TopoDS_Edge_to_owned(constructor.pin_mut().Edge())
+            }
             Edge::Line(start, end) => {
                 let mut constructor = ffi::BRepBuilderAPI_MakeEdge_gp_Pnt_gp_Pnt(
                     &start.to_3d(plane).to_occt_point(),

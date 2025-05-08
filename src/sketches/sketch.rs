@@ -72,7 +72,7 @@ impl Sketch {
         let face_shape = ffi::cast_face_to_shape(&face);
         let mut make_solid = ffi::BRepPrimAPI_MakePrism_ctor(
             face_shape,
-            &(plane.normal() * thickness.m()).to_occt(),
+            &(plane.normal() * thickness.m()).to_occt_vec(),
             false,
             true,
         );
@@ -97,7 +97,7 @@ impl Sketch {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Cuboid, Path, Point2D, Point3D};
+    use crate::{Cuboid, Cylinder, Path, Point2D, Point3D, sketches::primitives::Circle};
 
     use super::*;
 
@@ -111,6 +111,16 @@ mod tests {
         assert_eq!(
             sketch.extrude(&Plane::xz(), Length::from_m(-3.)),
             Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 3., 2.))
+        )
+    }
+
+    #[test]
+    fn extrude_cylinder() {
+        let sketch = Circle::from_radius(Length::from_m(1.));
+        assert_eq!(
+            sketch.extrude(&Plane::xy(), Length::from_m(2.)),
+            Cylinder::from_radius(Length::from_m(1.), Length::from_m(2.))
+                .move_to(Point3D::from_m(0., 0., 1.))
         )
     }
 }

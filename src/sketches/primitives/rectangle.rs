@@ -1,5 +1,9 @@
 use crate::{Length, Path, Point2D, Sketch};
 
+/// Builder for a rectangular `Sketch`.
+///
+/// While the `Rectangle` struct itself is not used, its constructor methods like
+/// `Rectangle::from_dim()` can be used to build this primitive `Sketch`.
 pub struct Rectangle;
 impl Rectangle {
     /// Construct a centered rectangular `Sketch` from the x and y dimensions.

@@ -50,8 +50,12 @@ impl Vec3 {
         }
     }
 
-    pub(crate) fn to_occt(self) -> UniquePtr<ffi::gp_Vec> {
+    pub(crate) fn to_occt_vec(self) -> UniquePtr<ffi::gp_Vec> {
         ffi::new_vec(self.x, self.y, self.z)
+    }
+
+    pub(crate) fn to_occt_dir(self) -> UniquePtr<ffi::gp_Dir> {
+        ffi::gp_Dir_ctor(self.x, self.y, self.z)
     }
 }
 
