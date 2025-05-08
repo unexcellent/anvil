@@ -3,7 +3,7 @@ use std::vec;
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
 
-use crate::{Error, Length, Part, Plane};
+use crate::{Error, Length, Part, Plane, Point2D};
 
 use super::Edge;
 
@@ -45,6 +45,28 @@ impl Sketch {
             Err(_) => 0.,
         }
     }
+    /// Return the center of mass of the `Sketch`.
+    ///
+    /// If the `Sketch` is empty, an `Err(Error::EmptySketch)` is returned.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use anvil::{Length, Point2D, Rectangle};
+    ///
+    /// let centered_rect = Rectangle::from_dim(Length::from_m(1.), Length::from_m(2.));
+    /// assert_eq!(centered_rect.center(), Ok(Point2D::origin()));
+    /// ```
+    pub fn center(&self) -> Result<Point2D, Error> {
+        let occt = self.to_occt(&Plane::xy())?;
+        let mut gprops = ffi::GProp_GProps_ctor();
+        ffi::BRepGProp_VolumeProperties(&occt, gprops.pin_mut());
+        let centre_of_mass = ffi::GProp_GProps_CentreOfMass(&gprops);
+
+        Ok(Point2D {
+            x: Length::from_m(centre_of_mass.X()),
+            y: Length::from_m(centre_of_mass.Y()),
+        })
+    }
 
     /// Merge this `Sketch` with another.
     ///
@@ -64,7 +86,6 @@ impl Sketch {
         new_actions.push(SketchAction::Add(other.clone()));
         Self(new_actions)
     }
-
     /// Return the `Sketch` that is created from the overlapping area between this one and another.
     ///
     /// # Example
