@@ -82,6 +82,23 @@ impl Cuboid {
     pub fn from_m(x: f64, y: f64, z: f64) -> Part {
         Self::from_dim(Length::from_m(x), Length::from_m(y), Length::from_m(z))
     }
+    /// Construct a centered cuboidal `Part` directly from the x, y, and z millimeter values.
+    ///
+    /// This function is primarily intended to simplify tests and should not be exptected in
+    /// similar structs.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Cuboid, Length, Point3D, Part};
+    ///
+    /// assert_eq!(
+    ///     Cuboid::from_mm(1., 2., 3.),
+    ///     Cuboid::from_dim(Length::from_mm(1.), Length::from_mm(2.), Length::from_mm(3.))
+    /// )
+    /// ```
+    pub fn from_mm(x: f64, y: f64, z: f64) -> Part {
+        Self::from_dim(Length::from_mm(x), Length::from_mm(y), Length::from_mm(z))
+    }
 }
 
 #[cfg(test)]
