@@ -65,18 +65,28 @@ impl Cuboid {
 
         Part::from_occt(cuboid.pin_mut().Shape())
     }
+    /// Construct a centered cuboidal `Part` directly from the x, y, and z meter values.
+    ///
+    /// This function is primarily intended to simplify tests and should not be exptected in
+    /// similar structs.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Cuboid, Length, Point3D, Part};
+    ///
+    /// assert_eq!(
+    ///     Cuboid::from_m(1., 2., 3.),
+    ///     Cuboid::from_dim(Length::from_m(1.), Length::from_m(2.), Length::from_m(3.))
+    /// )
+    /// ```
+    pub fn from_m(x: f64, y: f64, z: f64) -> Part {
+        Self::from_dim(Length::from_m(x), Length::from_m(y), Length::from_m(z))
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    impl Cuboid {
-        /// Constructor for simplifying tests.
-        pub fn from_m(x: f64, y: f64, z: f64) -> Part {
-            Cuboid::from_dim(Length::from_m(x), Length::from_m(y), Length::from_m(z))
-        }
-    }
 
     #[test]
     fn from_dim_empty() {
