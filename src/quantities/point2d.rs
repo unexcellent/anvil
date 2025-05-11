@@ -2,7 +2,7 @@ use std::ops::{Add, Div, Mul, Sub};
 
 use crate::Length;
 
-use super::{Plane, Point3D};
+use super::{IntoF64, Plane, Point3D};
 
 /// A location in two-dimensional space.
 #[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
@@ -29,11 +29,11 @@ impl Point2D {
     /// ```rust
     /// use anvil::{Length, Point2D};
     ///
-    /// let point = Point2D::from_mm(1., 2.);
+    /// let point = Point2D::from_mm(1, 2);
     /// assert_eq!(point.x, Length::from_mm(1.));
     /// assert_eq!(point.y, Length::from_mm(2.));
     /// ```
-    pub fn from_mm(x: f64, y: f64) -> Self {
+    pub fn from_mm<T: IntoF64, U: IntoF64>(x: T, y: U) -> Self {
         Point2D {
             x: Length::from_mm(x),
             y: Length::from_mm(y),
@@ -45,11 +45,11 @@ impl Point2D {
     /// ```rust
     /// use anvil::{Length, Point2D};
     ///
-    /// let point = Point2D::from_m(1., 2.);
+    /// let point = Point2D::from_m(1, 2);
     /// assert_eq!(point.x, Length::from_m(1.));
     /// assert_eq!(point.y, Length::from_m(2.));
     /// ```
-    pub fn from_m(x: f64, y: f64) -> Self {
+    pub fn from_m<T: IntoF64, U: IntoF64>(x: T, y: U) -> Self {
         Point2D {
             x: Length::from_m(x),
             y: Length::from_m(y),

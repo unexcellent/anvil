@@ -5,6 +5,8 @@ use opencascade_sys::ffi;
 
 use crate::Length;
 
+use super::IntoF64;
+
 /// A location in three-dimensional space.
 #[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
 pub struct Point3D {
@@ -33,12 +35,12 @@ impl Point3D {
     /// ```rust
     /// use anvil::{Length, Point3D};
     ///
-    /// let point = Point3D::from_mm(1., 2., 3.);
-    /// assert_eq!(point.x, Length::from_mm(1.));
-    /// assert_eq!(point.y, Length::from_mm(2.));
-    /// assert_eq!(point.z, Length::from_mm(3.));
+    /// let point = Point3D::from_mm(1, 2, 3);
+    /// assert_eq!(point.x, Length::from_mm(1));
+    /// assert_eq!(point.y, Length::from_mm(2));
+    /// assert_eq!(point.z, Length::from_mm(3));
     /// ```
-    pub fn from_mm(x: f64, y: f64, z: f64) -> Self {
+    pub fn from_mm<T: IntoF64, U: IntoF64, V: IntoF64>(x: T, y: U, z: V) -> Self {
         Point3D {
             x: Length::from_mm(x),
             y: Length::from_mm(y),
@@ -51,12 +53,12 @@ impl Point3D {
     /// ```rust
     /// use anvil::{Length, Point3D};
     ///
-    /// let point = Point3D::from_m(1., 2., 3.);
-    /// assert_eq!(point.x, Length::from_m(1.));
-    /// assert_eq!(point.y, Length::from_m(2.));
-    /// assert_eq!(point.z, Length::from_m(3.));
+    /// let point = Point3D::from_m(1, 2, 3);
+    /// assert_eq!(point.x, Length::from_m(1));
+    /// assert_eq!(point.y, Length::from_m(2));
+    /// assert_eq!(point.z, Length::from_m(3));
     /// ```
-    pub fn from_m(x: f64, y: f64, z: f64) -> Self {
+    pub fn from_m<T: IntoF64, U: IntoF64, V: IntoF64>(x: T, y: U, z: V) -> Self {
         Point3D {
             x: Length::from_m(x),
             y: Length::from_m(y),

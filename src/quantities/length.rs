@@ -1,5 +1,7 @@
 use std::ops::{Add, Div, Mul, Sub};
 
+use super::into_f64::IntoF64;
+
 /// A physical length (i.e. a distance).
 ///
 /// Length exists to remove ambiguity about distance units, which are not supported by default by
@@ -30,8 +32,10 @@ impl Length {
     /// let len = Length::from_m(3.2);
     /// assert_eq!(len.mm(), 3200.);
     /// ```
-    pub fn from_m(value: f64) -> Self {
-        Length { mm: value * 1000. }
+    pub fn from_m<T: IntoF64>(value: T) -> Self {
+        Length {
+            mm: value.into_f64() * 1000.,
+        }
     }
     /// Return the value of this length in millimeters.
     pub fn m(&self) -> f64 {
@@ -46,8 +50,10 @@ impl Length {
     /// let len = Length::from_cm(5.4);
     /// assert_eq!(len.mm(), 54.);
     /// ```
-    pub fn from_cm(value: f64) -> Self {
-        Length { mm: value * 10. }
+    pub fn from_cm<T: IntoF64>(value: T) -> Self {
+        Length {
+            mm: value.into_f64() * 10.,
+        }
     }
     /// Return the value of this length in centimeters.
     pub fn cm(&self) -> f64 {
@@ -62,8 +68,10 @@ impl Length {
     /// let len = Length::from_mm(5.4);
     /// assert_eq!(len.m(), 0.0054);
     /// ```
-    pub fn from_mm(value: f64) -> Self {
-        Length { mm: value }
+    pub fn from_mm<T: IntoF64>(value: T) -> Self {
+        Length {
+            mm: value.into_f64(),
+        }
     }
     /// Return the value of this length in millimeters.
     pub fn mm(&self) -> f64 {
@@ -92,8 +100,8 @@ impl Length {
     /// ```rust
     /// use anvil::Length;
     ///
-    /// let len1 = Length::from_m(1.);
-    /// let len2 = Length::from_m(2.);
+    /// let len1 = Length::from_m(1);
+    /// let len2 = Length::from_m(2);
     /// assert_eq!(len1.max(&len2), len2);
     /// assert_eq!(len2.max(&len1), len2);
     /// ```
