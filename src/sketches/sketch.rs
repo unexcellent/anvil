@@ -156,6 +156,10 @@ impl Sketch {
     /// );
     /// ```
     pub fn extrude(&self, plane: &Plane, thickness: Length) -> Result<Part, Error> {
+        if thickness == Length::zero() {
+            return Err(Error::EmptySketch);
+        }
+
         let shape = self.to_occt(plane)?;
         let mut make_solid = ffi::BRepPrimAPI_MakePrism_ctor(
             &shape,
@@ -199,8 +203,7 @@ impl PartialEq for Sketch {
 fn edges_to_occt(edges: &[Edge], plane: &Plane) -> Result<UniquePtr<ffi::TopoDS_Shape>, Error> {
     let occt_edges: Vec<UniquePtr<ffi::TopoDS_Edge>> = edges
         .iter()
-        .map(|edge| edge.to_occt(plane))
-        .filter_map(|opt| opt)
+        .filter_map(|edge| edge.to_occt(plane))
         .collect();
 
     if occt_edges.is_empty() {
@@ -328,6 +331,15 @@ mod tests {
         let sketch = Sketch::empty();
         assert_eq!(
             sketch.extrude(&Plane::xy(), Length::from_m(5.)),
+            Err(Error::EmptySketch)
+        )
+    }
+
+    #[test]
+    fn extrude_zero_thickness() {
+        let sketch = Rectangle::from_dim(Length::from_m(1.), Length::from_m(2.));
+        assert_eq!(
+            sketch.extrude(&Plane::xy(), Length::zero()),
             Err(Error::EmptySketch)
         )
     }
