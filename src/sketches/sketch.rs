@@ -191,17 +191,21 @@ impl PartialEq for Sketch {
                 (occt_area(&intersection) - self.area()).abs() < 1e-7
                     && (occt_area(&intersection) - other.area()).abs() < 1e-7
             }
-            Err(_) => false,
+            Err(_) => true,
         }
     }
 }
 
 fn edges_to_occt(edges: &[Edge], plane: &Plane) -> Result<UniquePtr<ffi::TopoDS_Shape>, Error> {
-    if edges.is_empty() {
+    let occt_edges: Vec<UniquePtr<ffi::TopoDS_Edge>> = edges
+        .iter()
+        .map(|edge| edge.to_occt(plane))
+        .filter_map(|opt| opt)
+        .collect();
+
+    if occt_edges.is_empty() {
         return Err(Error::EmptySketch);
     }
-
-    let occt_edges = edges.iter().map(|edge| edge.to_occt(plane));
 
     let mut make_wire = ffi::BRepBuilderAPI_MakeWire_ctor();
     for edge in occt_edges {

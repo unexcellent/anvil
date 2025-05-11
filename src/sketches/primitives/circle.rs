@@ -32,6 +32,21 @@ impl Circle {
     /// assert_eq!(circle.center(), Ok(Point2D::origin()));
     /// ```
     pub fn from_diameter(diameter: Length) -> Sketch {
-        Sketch::from_edges(vec![Edge::Circle(Point2D::origin(), diameter / 2.)])
+        Self::from_radius(diameter / 2.)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_radius_empty() {
+        assert_eq!(Circle::from_radius(Length::from_m(0.)), Sketch::empty())
+    }
+
+    #[test]
+    fn from_diameter_empty() {
+        assert_eq!(Circle::from_diameter(Length::from_m(0.)), Sketch::empty())
     }
 }

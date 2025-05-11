@@ -46,3 +46,32 @@ impl Rectangle {
             .close()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_dim_empty() {
+        assert_eq!(
+            Rectangle::from_dim(Length::from_m(0.), Length::from_m(1.)),
+            Sketch::empty()
+        );
+        assert_eq!(
+            Rectangle::from_dim(Length::from_m(1.), Length::from_m(0.)),
+            Sketch::empty()
+        );
+    }
+
+    #[test]
+    fn from_corners_empty() {
+        assert_eq!(
+            Rectangle::from_corners(Point2D::from_m(1., 2.), Point2D::from_m(1., 4.)),
+            Sketch::empty()
+        );
+        assert_eq!(
+            Rectangle::from_corners(Point2D::from_m(1., 2.), Point2D::from_m(3., 2.)),
+            Sketch::empty()
+        );
+    }
+}
