@@ -4,11 +4,7 @@ use super::{Point3D, vec3::Vec3};
 
 /// A 2D plane in 3D space.
 #[derive(Debug, PartialEq, Clone)]
-pub struct Plane {
-    origin: Point3D,
-    x_axis: Vec3,
-    y_axis: Vec3,
-}
+pub struct Plane(Point3D, Vec3, Vec3);
 impl Plane {
     /// Construct the `Plane` spaned by the x and y axes.
     pub fn xy() -> Self {
@@ -41,28 +37,24 @@ impl Plane {
         if !axes_are_orthogonal {
             return Err(Error::VectorsNotOrthogonal(x_axis, y_axis));
         }
-        Ok(Self {
-            origin,
-            x_axis: x_axis.normalize()?,
-            y_axis: y_axis.normalize()?,
-        })
+        Ok(Self(origin, x_axis.normalize()?, y_axis.normalize()?))
     }
 
     /// Return the origin point of this `Plane`.
     pub fn origin(&self) -> Point3D {
-        self.origin
+        self.0
     }
     /// Return a the x-axis direction of this `Plane`.
     pub fn x_axis(&self) -> Vec3 {
-        self.x_axis
+        self.1
     }
     /// Return a the y-axis direction of this `Plane`.
     pub fn y_axis(&self) -> Vec3 {
-        self.y_axis
+        self.2
     }
     /// Return a `Vec3` that is orthogonal to this plane.
     pub fn normal(&self) -> Vec3 {
-        self.x_axis.cross(self.y_axis)
+        self.x_axis().cross(self.y_axis())
     }
 }
 
@@ -75,11 +67,11 @@ mod tests {
         let plane = Plane::new(Point3D::origin(), (2., 0., 0.), (0., 2., 0.));
         assert_eq!(
             plane,
-            Ok(Plane {
-                origin: Point3D::origin(),
-                x_axis: Vec3::from((1., 0., 0.)),
-                y_axis: Vec3::from((0., 1., 0.))
-            })
+            Ok(Plane(
+                Point3D::origin(),
+                Vec3::from((1., 0., 0.)),
+                Vec3::from((0., 1., 0.))
+            ))
         )
     }
 
@@ -88,11 +80,11 @@ mod tests {
         let plane = Plane::new(Point3D::origin(), (2., 0., 0.), (0., 2., 0.));
         assert_eq!(
             plane,
-            Ok(Plane {
-                origin: Point3D::origin(),
-                x_axis: Vec3::from((1., 0., 0.)),
-                y_axis: Vec3::from((0., 1., 0.))
-            })
+            Ok(Plane(
+                Point3D::origin(),
+                Vec3::from((1., 0., 0.)),
+                Vec3::from((0., 1., 0.))
+            ))
         )
     }
 }
