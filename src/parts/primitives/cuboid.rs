@@ -6,6 +6,7 @@ use crate::{Length, Part, Point3D, quantities::is_zero};
 ///
 /// While the `Cuboid` struct itself is not used, its constructor methods like `Cuboid::from_dim()`
 /// can be used to build this primitive `Part`.
+#[derive(Debug, PartialEq, Clone)]
 pub struct Cuboid;
 impl Cuboid {
     /// Construct a centered cuboidal `Part` from the x, y, and z dimensions.

@@ -5,6 +5,7 @@ use opencascade_sys::ffi;
 ///
 /// While the `Sphere` struct itself is not used, its constructor methods like `Sphere::from_radius()`
 /// can be used to build this primitive `Part`.
+#[derive(Debug, PartialEq, Clone)]
 pub struct Sphere;
 impl Sphere {
     /// Construct a centered spherical `Part` from a given radius.

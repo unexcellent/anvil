@@ -5,6 +5,7 @@ use opencascade_sys::ffi;
 ///
 /// While the `Cylinder` struct itself is not used, its constructor methods like
 /// `Cylinder::from_radius()` can be used to build this primitive `Part`.
+#[derive(Debug, PartialEq, Clone)]
 pub struct Cylinder;
 impl Cylinder {
     /// Construct a centered cylindrical `Part` from a given radius.
