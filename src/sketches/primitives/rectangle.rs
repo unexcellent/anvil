@@ -1,4 +1,4 @@
-use crate::{Length, Path, Point2D, Sketch};
+use crate::{Length, Path, Point2D, Sketch, quantities::IntoF64};
 
 /// Builder for a rectangular `Sketch`.
 ///
@@ -44,6 +44,42 @@ impl Rectangle {
             .line_to(corner2)
             .line_to(Point2D::new(corner1.x, corner2.y))
             .close()
+    }
+
+    /// Construct a centered rectangular `Sketch` directly from the x and y meter values.
+    ///
+    /// This function is primarily intended to simplify tests and should not be exptected in
+    /// similar structs.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Length, Rectangle};
+    ///
+    /// assert_eq!(
+    ///     Rectangle::from_m(1, 2),
+    ///     Rectangle::from_dim(Length::from_m(1.), Length::from_m(2))
+    /// )
+    /// ```
+    pub fn from_m<T: IntoF64, U: IntoF64>(x: T, y: U) -> Sketch {
+        Self::from_dim(Length::from_m(x), Length::from_m(y))
+    }
+
+    /// Construct a centered rectangular `Sketch` directly from the x and y millimeter values.
+    ///
+    /// This function is primarily intended to simplify tests and should not be exptected in
+    /// similar structs.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Length, Rectangle};
+    ///
+    /// assert_eq!(
+    ///     Rectangle::from_mm(1, 2),
+    ///     Rectangle::from_dim(Length::from_mm(1.), Length::from_mm(2))
+    /// )
+    /// ```
+    pub fn from_mm<T: IntoF64, U: IntoF64>(x: T, y: U) -> Sketch {
+        Self::from_dim(Length::from_mm(x), Length::from_mm(y))
     }
 }
 
