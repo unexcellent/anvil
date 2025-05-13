@@ -12,7 +12,7 @@ pub use parts::{
     Part,
     primitives::{Cuboid, Cylinder, Sphere},
 };
-pub use quantities::{Axis, Length, Plane, Point2D, Point3D};
+pub use quantities::{Angle, Axis, Length, Plane, Point2D, Point3D};
 pub use sketches::{
     Edge, Path, Sketch,
     primitives::{Circle, Rectangle},

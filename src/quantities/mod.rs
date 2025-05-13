@@ -1,3 +1,4 @@
+mod angle;
 mod axis;
 mod into_f64;
 mod length;
@@ -6,6 +7,7 @@ mod point2d;
 mod point3d;
 mod vec3;
 
+pub use angle::Angle;
 pub use axis::Axis;
 pub use into_f64::IntoF64;
 pub use length::{Length, is_zero};
