@@ -165,6 +165,32 @@ pub fn is_zero(lengths: &[Length]) -> bool {
     false
 }
 
+/// Macro for simplifying `Length` construction for static values.
+///
+/// Create a length with the correct unit by invoking `length!([value] [unit])`.
+///
+/// # Examples
+/// ```rust
+/// use anvil::{length, Length};
+///
+/// assert_eq!(length!(5 m), Length::from_m(5.));
+/// assert_eq!(length!(5.1 m), Length::from_m(5.1));
+/// assert_eq!(length!(2 cm), Length::from_cm(2.));
+/// assert_eq!(length!(1 mm), Length::from_mm(1.));
+/// ```
+#[macro_export]
+macro_rules! length {
+    ( $val:literal m ) => {
+        $crate::Length::from_m($val)
+    };
+    ( $val:literal cm ) => {
+        $crate::Length::from_cm($val)
+    };
+    ( $val:literal mm ) => {
+        $crate::Length::from_mm($val)
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
