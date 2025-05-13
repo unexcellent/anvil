@@ -67,7 +67,7 @@ impl Edge {
                     origin: center.to_3d(plane),
                     direction: plane.normal(),
                 };
-                let circle = ffi::gp_Circ_ctor(&axis.to_occt(), radius.m());
+                let circle = ffi::gp_Circ_ctor(&axis.to_occt_ax2(), radius.m());
                 let mut constructor = ffi::BRepBuilderAPI_MakeEdge_circle(&circle);
                 Some(ffi::TopoDS_Edge_to_owned(constructor.pin_mut().Edge()))
             }

@@ -3,7 +3,7 @@ use std::vec;
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
 
-use crate::{Error, Length, Part, Plane, Point2D};
+use crate::{Angle, Error, Length, Part, Plane, Point2D};
 
 use super::Edge;
 
@@ -126,7 +126,7 @@ impl Sketch {
         new_actions.push(SketchAction::Subtract(other.clone()));
         Self(new_actions)
     }
-    /// Return a clone of this part with the center moved to a specified point.
+    /// Return a clone of this `Sketch` with the center moved to a specified point.
     ///
     /// # Example
     /// ```rust
@@ -140,6 +140,20 @@ impl Sketch {
     pub fn move_to(&self, loc: Point2D) -> Self {
         let mut new_actions = self.0.clone();
         new_actions.push(SketchAction::MoveTo(loc));
+        Self(new_actions)
+    }
+    /// Return a clone of this `Sketch` rotated around the origin by a specified angle.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Angle, Length, Rectangle};
+    ///
+    /// let sketch = Rectangle::from_dim(Length::from_m(1.), Length::from_m(2.));
+    /// assert_eq!(sketch.rotate(Angle::from_deg(90.)), Rectangle::from_dim(Length::from_m(2.), Length::from_m(1.)))
+    /// ```
+    pub fn rotate(&self, angle: Angle) -> Self {
+        let mut new_actions = self.0.clone();
+        new_actions.push(SketchAction::Rotate(angle));
         Self(new_actions)
     }
 
@@ -233,6 +247,7 @@ enum SketchAction {
     AddEdges(Vec<Edge>),
     Intersect(Sketch),
     MoveTo(Point2D),
+    Rotate(Angle),
     Subtract(Sketch),
 }
 impl SketchAction {
@@ -279,6 +294,19 @@ impl SketchAction {
                     new_inner.pin_mut().set_global_translation(&location, false);
 
                     Some(new_inner)
+                }
+                None => None,
+            },
+            SketchAction::Rotate(angle) => match sketch {
+                Some(shape) => {
+                    let mut transform = ffi::new_transform();
+                    transform
+                        .pin_mut()
+                        .SetRotation(&plane.normal_axis().to_occt_ax1(), angle.rad());
+                    let mut operation =
+                        ffi::BRepBuilderAPI_Transform_ctor(&shape, &transform, false);
+                    let new_shape = ffi::TopoDS_Shape_to_owned(operation.pin_mut().Shape());
+                    Some(new_shape)
                 }
                 None => None,
             },

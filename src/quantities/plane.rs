@@ -1,6 +1,6 @@
 use crate::Error;
 
-use super::{Point3D, vec3::Vec3};
+use super::{Axis, Point3D, vec3::Vec3};
 
 /// A 2D plane in 3D space.
 #[derive(Debug, PartialEq, Clone)]
@@ -55,6 +55,13 @@ impl Plane {
     /// Return a `Vec3` that is orthogonal to this plane.
     pub fn normal(&self) -> Vec3 {
         self.x_axis().cross(self.y_axis())
+    }
+    /// Return an `Axis` that is orthogonal to this plane and crosses its origin.
+    pub fn normal_axis(&self) -> Axis {
+        Axis {
+            origin: self.origin(),
+            direction: self.normal(),
+        }
     }
 }
 
