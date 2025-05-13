@@ -159,10 +159,10 @@ macro_rules! angle {
         $crate::Angle::zero()
     };
     ( $val:literal deg ) => {
-        $crate::Angle::from_deg($val)
+        $crate::Angle::from_deg($val as f64)
     };
     ( $val:literal rad ) => {
-        $crate::Angle::from_rad($val)
+        $crate::Angle::from_rad($val as f64)
     };
 }
 

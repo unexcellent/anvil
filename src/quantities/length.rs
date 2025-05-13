@@ -185,13 +185,13 @@ macro_rules! length {
         $crate::Length::zero()
     };
     ( $val:literal m ) => {
-        $crate::Length::from_m($val)
+        $crate::Length::from_m($val as f64)
     };
     ( $val:literal cm ) => {
-        $crate::Length::from_cm($val)
+        $crate::Length::from_cm($val as f64)
     };
     ( $val:literal mm ) => {
-        $crate::Length::from_mm($val)
+        $crate::Length::from_mm($val as f64)
     };
 }
 
