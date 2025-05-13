@@ -152,8 +152,26 @@ impl Sketch {
     /// )
     /// ```
     pub fn rotate(&self, angle: Angle) -> Self {
+        match self.center() {
+            Ok(center) => self.rotate_around(center, angle),
+            Err(_) => self.clone(),
+        }
+    }
+    /// Return a clone of this `Sketch` rotated around its center.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Angle, Length, Point2D, Rectangle};
+    ///
+    /// let sketch = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(1, 1));
+    /// assert_eq!(
+    ///     sketch.rotate_around(Point2D::origin(), Angle::from_deg(90.)),
+    ///     Rectangle::from_corners(Point2D::origin(), Point2D::from_m(-1, 1))
+    /// )
+    /// ```
+    pub fn rotate_around(&self, point: Point2D, angle: Angle) -> Self {
         let mut new_actions = self.0.clone();
-        new_actions.push(SketchAction::Rotate(angle));
+        new_actions.push(SketchAction::RotateAround(point, angle));
         Self(new_actions)
     }
 
@@ -251,7 +269,7 @@ enum SketchAction {
     AddEdges(Vec<Edge>),
     Intersect(Sketch),
     MoveTo(Point2D),
-    Rotate(Angle),
+    RotateAround(Point2D, Angle),
     Subtract(Sketch),
 }
 impl SketchAction {
@@ -301,20 +319,12 @@ impl SketchAction {
                 }
                 None => None,
             },
-            SketchAction::Rotate(angle) => match sketch {
+            SketchAction::RotateAround(point, angle) => match sketch {
                 Some(shape) => {
-                    let shape_center = {
-                        let mut gprops = ffi::GProp_GProps_ctor();
-                        ffi::BRepGProp_VolumeProperties(&shape, gprops.pin_mut());
-
-                        let centre_of_mass = ffi::GProp_GProps_CentreOfMass(&gprops);
-                        Point2D::from_m(centre_of_mass.X(), centre_of_mass.Y())
-                    };
-
                     let mut transform = ffi::new_transform();
                     transform.pin_mut().SetRotation(
                         &Axis {
-                            origin: shape_center.to_3d(plane),
+                            origin: point.to_3d(plane),
                             direction: plane.normal(),
                         }
                         .to_occt_ax1(),
@@ -381,6 +391,26 @@ mod tests {
                 .move_to(Point2D::from_m(2., 2.)),
             Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.))
                 .move_to(Point2D::from_m(3., 3.)),
+        )
+    }
+
+    #[test]
+    fn eq_both_rectangles_rotated() {
+        assert_eq!(
+            Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.))
+                .rotate(Angle::from_deg(45.)),
+            Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.))
+                .rotate(Angle::from_deg(45.)),
+        )
+    }
+
+    #[test]
+    fn ne_both_rectangles_rotated() {
+        assert_ne!(
+            Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.))
+                .rotate(Angle::from_deg(45.)),
+            Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.))
+                .rotate(Angle::from_deg(90.)),
         )
     }
 
