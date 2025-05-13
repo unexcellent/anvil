@@ -9,18 +9,13 @@ use cxx::UniquePtr;
 use opencascade_sys::ffi;
 use tempfile::NamedTempFile;
 
-use crate::{Error, Length, Point3D};
+use crate::{Angle, Axis, Error, Length, Point3D};
 
 /// A 3D object in space.
 pub struct Part {
     pub(crate) inner: Option<UniquePtr<ffi::TopoDS_Shape>>,
 }
 impl Part {
-    pub(crate) fn from_occt(part: &ffi::TopoDS_Shape) -> Self {
-        let inner = ffi::TopoDS_Shape_to_owned(part);
-        Self { inner: Some(inner) }
-    }
-
     /// Construct an empty `Part` which can be used for merging with other parts.
     ///
     /// # Example
@@ -108,7 +103,7 @@ impl Part {
             (None, _) => Part { inner: None },
         }
     }
-    /// Return a clone of this part with the center moved to a specified point.
+    /// Return a clone of this `Part` with the center moved to a specified point.
     ///
     /// # Example
     /// ```rust
@@ -136,6 +131,28 @@ impl Part {
                 Part {
                     inner: Some(new_inner),
                 }
+            }
+            None => Self { inner: None },
+        }
+    }
+    /// Return a clone of this `Part` rotated around an axis.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Angle, Axis, Cuboid};
+    ///
+    /// let cuboid = Cuboid::from_m(1, 2, 3);
+    /// assert_eq!(cuboid.rotate_around(Axis::x(), Angle::from_deg(90)), Cuboid::from_m(1, 3, 2));
+    /// ```
+    pub fn rotate_around(&self, axis: Axis, angle: Angle) -> Self {
+        match &self.inner {
+            Some(inner) => {
+                let mut transform = ffi::new_transform();
+                transform
+                    .pin_mut()
+                    .SetRotation(&axis.to_occt_ax1(), angle.rad());
+                let mut operation = ffi::BRepBuilderAPI_Transform_ctor(inner, &transform, false);
+                Self::from_occt(operation.pin_mut().Shape())
             }
             None => Self { inner: None },
         }
@@ -257,6 +274,11 @@ impl Part {
             }
             None => Err(Error::EmptyPart),
         }
+    }
+
+    pub(crate) fn from_occt(part: &ffi::TopoDS_Shape) -> Self {
+        let inner = ffi::TopoDS_Shape_to_owned(part);
+        Self { inner: Some(inner) }
     }
 }
 
