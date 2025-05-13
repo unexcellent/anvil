@@ -3,7 +3,7 @@ use std::vec;
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
 
-use crate::{Angle, Error, Length, Part, Plane, Point2D};
+use crate::{Angle, Axis, Error, Length, Part, Plane, Point2D};
 
 use super::Edge;
 
@@ -66,10 +66,7 @@ impl Sketch {
         ffi::BRepGProp_VolumeProperties(&occt, gprops.pin_mut());
 
         let centre_of_mass = ffi::GProp_GProps_CentreOfMass(&gprops);
-        Ok(Point2D {
-            x: Length::from_m(centre_of_mass.X()),
-            y: Length::from_m(centre_of_mass.Y()),
-        })
+        Ok(Point2D::from_m(centre_of_mass.X(), centre_of_mass.Y()))
     }
 
     /// Merge this `Sketch` with another.
@@ -142,14 +139,17 @@ impl Sketch {
         new_actions.push(SketchAction::MoveTo(loc));
         Self(new_actions)
     }
-    /// Return a clone of this `Sketch` rotated around the origin by a specified angle.
+    /// Return a clone of this `Sketch` rotated around its center.
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Angle, Length, Rectangle};
+    /// use anvil::{Angle, Length, Point2D, Rectangle};
     ///
-    /// let sketch = Rectangle::from_dim(Length::from_m(1.), Length::from_m(2.));
-    /// assert_eq!(sketch.rotate(Angle::from_deg(90.)), Rectangle::from_dim(Length::from_m(2.), Length::from_m(1.)))
+    /// let sketch = Rectangle::from_dim(Length::from_m(1.), Length::from_m(2.)).move_to(Point2D::from_m(1, 1));
+    /// assert_eq!(
+    ///     sketch.rotate(Angle::from_deg(90.)),
+    ///     Rectangle::from_dim(Length::from_m(2.), Length::from_m(1.)).move_to(Point2D::from_m(1, 1))
+    /// )
     /// ```
     pub fn rotate(&self, angle: Angle) -> Self {
         let mut new_actions = self.0.clone();
@@ -204,6 +204,10 @@ impl Sketch {
 
 impl PartialEq for Sketch {
     fn eq(&self, other: &Self) -> bool {
+        if self.center() != other.center() {
+            return false;
+        }
+
         match self.intersect(other).to_occt(&Plane::xy()) {
             Ok(intersection) => {
                 (occt_area(&intersection) - self.area()).abs() < 1e-7
@@ -299,10 +303,23 @@ impl SketchAction {
             },
             SketchAction::Rotate(angle) => match sketch {
                 Some(shape) => {
+                    let shape_center = {
+                        let mut gprops = ffi::GProp_GProps_ctor();
+                        ffi::BRepGProp_VolumeProperties(&shape, gprops.pin_mut());
+
+                        let centre_of_mass = ffi::GProp_GProps_CentreOfMass(&gprops);
+                        Point2D::from_m(centre_of_mass.X(), centre_of_mass.Y())
+                    };
+
                     let mut transform = ffi::new_transform();
-                    transform
-                        .pin_mut()
-                        .SetRotation(&plane.normal_axis().to_occt_ax1(), angle.rad());
+                    transform.pin_mut().SetRotation(
+                        &Axis {
+                            origin: shape_center.to_3d(plane),
+                            direction: plane.normal(),
+                        }
+                        .to_occt_ax1(),
+                        angle.rad(),
+                    );
                     let mut operation =
                         ffi::BRepBuilderAPI_Transform_ctor(&shape, &transform, false);
                     let new_shape = ffi::TopoDS_Shape_to_owned(operation.pin_mut().Shape());
@@ -340,10 +357,39 @@ mod tests {
     }
 
     #[test]
-    fn neq_both_rectangles() {
+    fn ne_both_rectangles() {
         assert_ne!(
             Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.)),
             Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.1)),
+        )
+    }
+
+    #[test]
+    fn eq_both_rectangles_not_at_origin() {
+        assert_eq!(
+            Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.))
+                .move_to(Point2D::from_m(2., 2.)),
+            Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.))
+                .move_to(Point2D::from_m(2., 2.)),
+        )
+    }
+
+    #[test]
+    fn ne_both_rectangles_not_at_origin() {
+        assert_ne!(
+            Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.))
+                .move_to(Point2D::from_m(2., 2.)),
+            Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.))
+                .move_to(Point2D::from_m(3., 3.)),
+        )
+    }
+
+    #[test]
+    fn ne_different_sketches() {
+        assert_ne!(
+            Rectangle::from_dim(Length::from_m(1), Length::from_m(1))
+                .move_to(Point2D::from_m(2, 2)),
+            Circle::from_radius(Length::from_m(1)).move_to(Point2D::from_m(2, 2)),
         )
     }
 

@@ -39,6 +39,9 @@ impl Rectangle {
     /// assert_eq!(rect.area(), 4.);
     /// ```
     pub fn from_corners(corner1: Point2D, corner2: Point2D) -> Sketch {
+        if corner1.x == corner2.x || corner1.y == corner2.y {
+            return Sketch::empty();
+        }
         Path::at(corner1)
             .line_to(Point2D::new(corner2.x, corner1.y))
             .line_to(corner2)
