@@ -193,6 +193,9 @@ macro_rules! length {
     ( $val:literal mm ) => {
         $crate::Length::from_mm($val as f64)
     };
+    ($val:literal $unit:ident) => {
+        compile_error!(concat!("Unsupported length unit: ", stringify!($unit)))
+    };
 }
 
 #[cfg(test)]

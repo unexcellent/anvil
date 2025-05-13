@@ -164,6 +164,9 @@ macro_rules! angle {
     ( $val:literal rad ) => {
         $crate::Angle::from_rad($val as f64)
     };
+    ($val:literal $unit:ident) => {
+        compile_error!(concat!("Unsupported angle unit: ", stringify!($unit)))
+    };
 }
 
 #[cfg(test)]
