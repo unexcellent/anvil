@@ -1,6 +1,6 @@
 use std::ops::{Add, Div, Mul, Sub};
 
-use crate::Length;
+use crate::{Length, length};
 
 use super::{IntoF64, Plane, Point3D};
 
@@ -116,6 +116,26 @@ impl Div<f64> for Point2D {
     fn div(self, other: f64) -> Point2D {
         Point2D::new(self.x / other, self.y / other)
     }
+}
+
+/// Macro for simplifying `Point2D` and `Point3D` construction for static values.
+///
+/// # Examples
+/// ```rust
+/// use anvil::{Length, point, Point2D, Point3D};
+///
+/// assert_eq!(point!(1 m, 2 m), Point2D::new(Length::from_m(1), Length::from_m(2)));
+/// assert_eq!(point!(1 cm, 2.1 mm), Point2D::new(Length::from_cm(1), Length::from_mm(2.1)));
+/// assert_eq!(point!(1 m, 2 m, 3 m), Point3D::new(Length::from_m(1), Length::from_m(2), Length::from_m(3)));
+/// ```
+#[macro_export]
+macro_rules! point {
+    ($x:literal $x_unit:ident, $y:literal $y_unit:ident) => {
+        anvil::Point2D::new(anvil::length!($x $x_unit), anvil::length!($y $y_unit))
+    };
+    ($x:literal $x_unit:ident, $y:literal $y_unit:ident, $z:literal $z_unit:ident) => {
+        anvil::Point3D::new(anvil::length!($x $x_unit), anvil::length!($y $y_unit), anvil::length!($z $z_unit))
+    };
 }
 
 #[cfg(test)]
