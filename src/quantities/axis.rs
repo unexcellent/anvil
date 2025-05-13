@@ -4,6 +4,7 @@ use opencascade_sys::ffi;
 use super::{Point3D, Vec3};
 
 /// An axis in 3D space.
+#[derive(Debug, PartialEq, Clone)]
 pub struct Axis {
     /// A point contained in the axis.
     pub origin: Point3D,
