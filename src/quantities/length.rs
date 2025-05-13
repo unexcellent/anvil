@@ -82,10 +82,10 @@ impl Length {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::Length;
+    /// use anvil::length;
     ///
-    /// let len1 = Length::from_m(1.);
-    /// let len2 = Length::from_m(2.);
+    /// let len1 = length!(1 m);
+    /// let len2 = length!(2 m);
     /// assert_eq!(len1.min(&len2), len1);
     /// assert_eq!(len2.min(&len1), len1);
     /// ```
@@ -98,10 +98,10 @@ impl Length {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::Length;
+    /// use anvil::length;
     ///
-    /// let len1 = Length::from_m(1);
-    /// let len2 = Length::from_m(2);
+    /// let len1 = length!(1 m);
+    /// let len2 = length!(2 m);
     /// assert_eq!(len1.max(&len2), len2);
     /// assert_eq!(len2.max(&len1), len2);
     /// ```
@@ -173,13 +173,17 @@ pub fn is_zero(lengths: &[Length]) -> bool {
 /// ```rust
 /// use anvil::{length, Length};
 ///
-/// assert_eq!(length!(5 m), Length::from_m(5.));
+/// assert_eq!(length!(5 m), Length::from_m(5));
 /// assert_eq!(length!(5.1 m), Length::from_m(5.1));
 /// assert_eq!(length!(2 cm), Length::from_cm(2.));
-/// assert_eq!(length!(1 mm), Length::from_mm(1.));
+/// assert_eq!(length!(1 mm), Length::from_mm(1));
+/// assert_eq!(length!(0), Length::zero());
 /// ```
 #[macro_export]
 macro_rules! length {
+    ( 0 ) => {
+        $crate::Length::zero()
+    };
     ( $val:literal m ) => {
         $crate::Length::from_m($val)
     };
@@ -197,22 +201,22 @@ mod tests {
 
     #[test]
     fn add() {
-        assert_eq!(Length::from_m(2.) + Length::from_m(3.), Length::from_m(5.));
+        assert_eq!(length!(2 m) + length!(3 m), length!(5 m));
     }
 
     #[test]
     fn subtract() {
-        assert_eq!(Length::from_m(3.) - Length::from_m(2.), Length::from_m(1.));
+        assert_eq!(length!(3 m) - length!(2 m), length!(1 m));
     }
 
     #[test]
     fn multiply_with_f64() {
-        assert_eq!(Length::from_m(5.) * 4., Length::from_m(20.));
-        assert_eq!(4. * Length::from_m(5.), Length::from_m(20.));
+        assert_eq!(length!(5 m) * 4., Length::from_m(20.));
+        assert_eq!(4. * length!(5 m), Length::from_m(20.));
     }
 
     #[test]
     fn divide_with_f64() {
-        assert_eq!(Length::from_m(6.) / 2., Length::from_m(3.));
+        assert_eq!(Length::from_m(6.) / 2., length!(3 m));
     }
 }

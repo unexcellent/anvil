@@ -60,12 +60,12 @@ impl Part {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Cuboid, Length};
+    /// use anvil::{Cuboid, length};
     ///
-    /// let cuboid1 = Cuboid::from_dim(Length::from_m(5.), Length::from_m(5.), Length::from_m(1.));
-    /// let cuboid2 = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(5.));
+    /// let cuboid1 = Cuboid::from_dim(length!(5 m), length!(5 m), length!(1 m));
+    /// let cuboid2 = Cuboid::from_dim(length!(1 m), length!(1 m), length!(5 m));
     /// assert!(
-    ///     cuboid1.intersect(&cuboid2) == Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.))
+    ///     cuboid1.intersect(&cuboid2) == Cuboid::from_dim(length!(1 m), length!(1 m), length!(1 m))
     /// )
     /// ```
     pub fn intersect(&self, other: &Self) -> Self {
@@ -107,9 +107,9 @@ impl Part {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Cuboid, Length, Point3D};
+    /// use anvil::{Cuboid, length, Point3D};
     ///
-    /// let cuboid = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
+    /// let cuboid = Cuboid::from_dim(length!(1 m), length!(1 m), length!(1 m));
     /// let moved_cuboid = cuboid.move_to(Point3D::from_m(2., 2., 2.));
     /// assert_eq!(cuboid.center(), Ok(Point3D::origin()));
     /// assert_eq!(moved_cuboid.center(), Ok(Point3D::from_m(2., 2., 2.)));
@@ -141,11 +141,11 @@ impl Part {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Angle, Axis, Cuboid, Point3D};
+    /// use anvil::{angle, Axis, Cuboid, Point3D};
     ///
     /// let cuboid = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1, 1, 1));
     /// assert_eq!(
-    ///     cuboid.rotate_around(Axis::x(), Angle::from_deg(90)),
+    ///     cuboid.rotate_around(Axis::x(), angle!(90 deg)),
     ///     Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1, -1, 1))
     /// )
     /// ```
@@ -169,9 +169,9 @@ impl Part {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Cuboid, Length};
+    /// use anvil::{Cuboid, length};
     ///
-    /// let cuboid = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
+    /// let cuboid = Cuboid::from_dim(length!(1 m), length!(1 m), length!(1 m));
     /// assert!((cuboid.volume() - 1.).abs() < 1e-9)
     /// ```
     pub fn volume(&self) -> f64 {
@@ -190,9 +190,9 @@ impl Part {
     ///
     /// # Examples
     /// ```rust
-    /// use anvil::{Cuboid, Length, Point3D};
+    /// use anvil::{Cuboid, length, Point3D};
     ///
-    /// let centered_cuboid = Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(1.));
+    /// let centered_cuboid = Cuboid::from_dim(length!(1 m), length!(1 m), length!(1 m));
     /// assert_eq!(centered_cuboid.center(), Ok(Point3D::origin()));
     ///
     /// let non_centered_cuboid = Cuboid::from_corners(
@@ -331,7 +331,7 @@ fn round(x: f64, n_digits: u8) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Cuboid, Sphere};
+    use crate::{Cuboid, Sphere, length};
 
     #[test]
     fn eq_both_none() {
@@ -354,15 +354,15 @@ mod tests {
 
     #[test]
     fn eq_both_sphere() {
-        let sphere1 = Sphere::from_radius(Length::from_m(2.));
-        let sphere2 = Sphere::from_radius(Length::from_m(2.));
+        let sphere1 = Sphere::from_radius(length!(2 m));
+        let sphere2 = Sphere::from_radius(length!(2 m));
         assert!(sphere1 == sphere2)
     }
 
     #[test]
     fn neq_both_sphere() {
-        let sphere1 = Sphere::from_radius(Length::from_m(1.));
-        let sphere2 = Sphere::from_radius(Length::from_m(2.));
+        let sphere1 = Sphere::from_radius(length!(1 m));
+        let sphere2 = Sphere::from_radius(length!(2 m));
         assert!(sphere1 != sphere2)
     }
 

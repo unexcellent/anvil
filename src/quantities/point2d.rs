@@ -27,11 +27,11 @@ impl Point2D {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Length, Point2D};
+    /// use anvil::{length, Point2D};
     ///
     /// let point = Point2D::from_mm(1, 2);
-    /// assert_eq!(point.x, Length::from_mm(1.));
-    /// assert_eq!(point.y, Length::from_mm(2.));
+    /// assert_eq!(point.x, length!(1 mm));
+    /// assert_eq!(point.y, length!(2 mm));
     /// ```
     pub fn from_mm<T: IntoF64, U: IntoF64>(x: T, y: U) -> Self {
         Point2D {
@@ -43,11 +43,11 @@ impl Point2D {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Length, Point2D};
+    /// use anvil::{length, Point2D};
     ///
     /// let point = Point2D::from_m(1, 2);
-    /// assert_eq!(point.x, Length::from_m(1.));
-    /// assert_eq!(point.y, Length::from_m(2.));
+    /// assert_eq!(point.x, length!(1 m));
+    /// assert_eq!(point.y, length!(2 m));
     /// ```
     pub fn from_m<T: IntoF64, U: IntoF64>(x: T, y: U) -> Self {
         Point2D {

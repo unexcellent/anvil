@@ -67,10 +67,10 @@ impl Angle {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::Angle;
+    /// use anvil::angle;
     ///
-    /// let angle1 = Angle::from_rad(1.);
-    /// let angle2 = Angle::from_rad(2.);
+    /// let angle1 = angle!(1 deg);
+    /// let angle2 = angle!(2 deg);
     /// assert_eq!(angle1.min(&angle2), angle1);
     /// assert_eq!(angle2.min(&angle1), angle1);
     /// ```
@@ -83,10 +83,10 @@ impl Angle {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::Angle;
+    /// use anvil::angle;
     ///
-    /// let angle1 = Angle::from_rad(1);
-    /// let angle2 = Angle::from_rad(2);
+    /// let angle1 = angle!(1 deg);
+    /// let angle2 = angle!(2 deg);
     /// assert_eq!(angle1.max(&angle2), angle2);
     /// assert_eq!(angle2.max(&angle1), angle2);
     /// ```
@@ -151,9 +151,13 @@ impl Div<f64> for Angle {
 /// assert_eq!(angle!(5 deg), Angle::from_deg(5.));
 /// assert_eq!(angle!(5.1 deg), Angle::from_deg(5.1));
 /// assert_eq!(angle!(2 rad), Angle::from_rad(2.));
+/// assert_eq!(angle!(0), Angle::zero());
 /// ```
 #[macro_export]
 macro_rules! angle {
+    ( 0 ) => {
+        $crate::Angle::zero()
+    };
     ( $val:literal deg ) => {
         $crate::Angle::from_deg($val)
     };
@@ -164,32 +168,26 @@ macro_rules! angle {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::angle;
 
     #[test]
     fn add() {
-        assert_eq!(
-            Angle::from_rad(2.) + Angle::from_rad(3.),
-            Angle::from_rad(5.)
-        );
+        assert_eq!(angle!(2 rad) + angle!(3 rad), angle!(5 rad));
     }
 
     #[test]
     fn subtract() {
-        assert_eq!(
-            Angle::from_rad(3.) - Angle::from_rad(2.),
-            Angle::from_rad(1.)
-        );
+        assert_eq!(angle!(3 rad) - angle!(2 rad), angle!(1 rad));
     }
 
     #[test]
     fn multiply_with_f64() {
-        assert_eq!(Angle::from_rad(5.) * 4., Angle::from_rad(20.));
-        assert_eq!(4. * Angle::from_rad(5.), Angle::from_rad(20.));
+        assert_eq!(angle!(5 rad) * 4., angle!(20 rad));
+        assert_eq!(4. * angle!(5 rad), angle!(20 rad));
     }
 
     #[test]
     fn divide_with_f64() {
-        assert_eq!(Angle::from_rad(6.) / 2., Angle::from_rad(3.));
+        assert_eq!(angle!(6 rad) / 2., angle!(3 rad));
     }
 }

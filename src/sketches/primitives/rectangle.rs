@@ -11,9 +11,9 @@ impl Rectangle {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Length, Point2D, Rectangle};
+    /// use anvil::{length, Point2D, Rectangle};
     ///
-    /// let rect = Rectangle::from_dim(Length::from_m(1.), Length::from_m(1.));
+    /// let rect = Rectangle::from_dim(length!(1 m), length!(1 m));
     /// assert_eq!(rect.area(), 1.);
     /// assert_eq!(rect.center(), Ok(Point2D::origin()));
     /// ```
@@ -56,11 +56,11 @@ impl Rectangle {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Length, Rectangle};
+    /// use anvil::{length, Rectangle};
     ///
     /// assert_eq!(
     ///     Rectangle::from_m(1, 2),
-    ///     Rectangle::from_dim(Length::from_m(1.), Length::from_m(2))
+    ///     Rectangle::from_dim(length!(1 m), length!(2 m))
     /// )
     /// ```
     pub fn from_m<T: IntoF64, U: IntoF64>(x: T, y: U) -> Sketch {
@@ -74,11 +74,11 @@ impl Rectangle {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Length, Rectangle};
+    /// use anvil::{length, Rectangle};
     ///
     /// assert_eq!(
     ///     Rectangle::from_mm(1, 2),
-    ///     Rectangle::from_dim(Length::from_mm(1.), Length::from_mm(2))
+    ///     Rectangle::from_dim(length!(1 mm), length!(2 mm))
     /// )
     /// ```
     pub fn from_mm<T: IntoF64, U: IntoF64>(x: T, y: U) -> Sketch {
@@ -89,15 +89,16 @@ impl Rectangle {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::length;
 
     #[test]
     fn from_dim_empty() {
         assert_eq!(
-            Rectangle::from_dim(Length::from_m(0.), Length::from_m(1.)),
+            Rectangle::from_dim(length!(0), length!(1 m)),
             Sketch::empty()
         );
         assert_eq!(
-            Rectangle::from_dim(Length::from_m(1.), Length::from_m(0.)),
+            Rectangle::from_dim(length!(1 m), length!(0)),
             Sketch::empty()
         );
     }

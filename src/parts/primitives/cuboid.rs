@@ -16,9 +16,9 @@ impl Cuboid {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Cuboid, Length, Point3D, Part};
+    /// use anvil::{Cuboid, length, Point3D, Part};
     ///
-    /// let part = Cuboid::from_dim(Length::from_m(1.), Length::from_m(2.), Length::from_m(3.));
+    /// let part = Cuboid::from_dim(length!(1 m), length!(2 m), length!(3 m));
     /// assert_eq!(part.center(), Ok(Point3D::origin()));
     /// assert!((part.volume() - 6.).abs() < 1e-5);
     /// ```
@@ -40,7 +40,7 @@ impl Cuboid {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Cuboid, Length, Point3D, Part};
+    /// use anvil::{Cuboid, length, Point3D, Part};
     ///
     /// let part = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(2., 2., 2.));
     /// assert_eq!(part.center(), Ok(Point3D::from_m(1., 1., 1.)));
@@ -76,11 +76,11 @@ impl Cuboid {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Cuboid, Length, Point3D, Part};
+    /// use anvil::{Cuboid, length, Point3D, Part};
     ///
     /// assert_eq!(
     ///     Cuboid::from_m(1, 2, 3.),
-    ///     Cuboid::from_dim(Length::from_m(1.), Length::from_m(2), Length::from_m(3.))
+    ///     Cuboid::from_dim(length!(1 m), length!(2 m), length!(3 m))
     /// )
     /// ```
     pub fn from_m<T: IntoF64, U: IntoF64, V: IntoF64>(x: T, y: U, z: V) -> Part {
@@ -93,11 +93,11 @@ impl Cuboid {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Cuboid, Length, Point3D, Part};
+    /// use anvil::{Cuboid, length, Point3D, Part};
     ///
     /// assert_eq!(
     ///     Cuboid::from_mm(1., 2., 3.),
-    ///     Cuboid::from_dim(Length::from_mm(1.), Length::from_mm(2.), Length::from_mm(3.))
+    ///     Cuboid::from_dim(length!(1 mm), length!(2 mm), length!(3 mm))
     /// )
     /// ```
     pub fn from_mm<T: IntoF64, U: IntoF64, V: IntoF64>(x: T, y: U, z: V) -> Part {
@@ -108,20 +108,12 @@ impl Cuboid {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::length;
 
     #[test]
     fn from_dim_empty() {
-        assert!(
-            Cuboid::from_dim(Length::from_m(0.), Length::from_m(1.), Length::from_m(1.))
-                == Part::empty()
-        );
-        assert!(
-            Cuboid::from_dim(Length::from_m(1.), Length::from_m(0.), Length::from_m(1.))
-                == Part::empty()
-        );
-        assert!(
-            Cuboid::from_dim(Length::from_m(1.), Length::from_m(1.), Length::from_m(0.))
-                == Part::empty()
-        )
+        assert!(Cuboid::from_dim(length!(0), length!(1 m), length!(1 m)) == Part::empty());
+        assert!(Cuboid::from_dim(length!(1 m), length!(0), length!(1 m)) == Part::empty());
+        assert!(Cuboid::from_dim(length!(1 m), length!(1 m), length!(0)) == Part::empty())
     }
 }

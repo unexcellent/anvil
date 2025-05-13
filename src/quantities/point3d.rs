@@ -33,12 +33,12 @@ impl Point3D {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Length, Point3D};
+    /// use anvil::{length, Point3D};
     ///
     /// let point = Point3D::from_mm(1, 2, 3);
-    /// assert_eq!(point.x, Length::from_mm(1));
-    /// assert_eq!(point.y, Length::from_mm(2));
-    /// assert_eq!(point.z, Length::from_mm(3));
+    /// assert_eq!(point.x, length!(1 mm));
+    /// assert_eq!(point.y, length!(2 mm));
+    /// assert_eq!(point.z, length!(3 mm));
     /// ```
     pub fn from_mm<T: IntoF64, U: IntoF64, V: IntoF64>(x: T, y: U, z: V) -> Self {
         Point3D {
@@ -51,12 +51,12 @@ impl Point3D {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Length, Point3D};
+    /// use anvil::{length, Point3D};
     ///
     /// let point = Point3D::from_m(1, 2, 3);
-    /// assert_eq!(point.x, Length::from_m(1));
-    /// assert_eq!(point.y, Length::from_m(2));
-    /// assert_eq!(point.z, Length::from_m(3));
+    /// assert_eq!(point.x, length!(1 m));
+    /// assert_eq!(point.y, length!(2 m));
+    /// assert_eq!(point.z, length!(3 m));
     /// ```
     pub fn from_m<T: IntoF64, U: IntoF64, V: IntoF64>(x: T, y: U, z: V) -> Self {
         Point3D {

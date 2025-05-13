@@ -11,9 +11,9 @@ impl Circle {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Circle, Length, Point2D};
+    /// use anvil::{Circle, length, Point2D};
     ///
-    /// let circle = Circle::from_radius(Length::from_m(1.));
+    /// let circle = Circle::from_radius(length!(1 m));
     /// assert!((circle.area() - 3.141593).abs() < 1e-5);
     /// assert_eq!(circle.center(), Ok(Point2D::origin()));
     /// ```
@@ -25,9 +25,9 @@ impl Circle {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Circle, Length, Point2D};
+    /// use anvil::{Circle, length, Point2D};
     ///
-    /// let circle = Circle::from_diameter(Length::from_m(1.));
+    /// let circle = Circle::from_diameter(length!(1 m));
     /// assert!((circle.area() - 0.785398).abs() < 1e-5);
     /// assert_eq!(circle.center(), Ok(Point2D::origin()));
     /// ```
@@ -39,14 +39,15 @@ impl Circle {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::length;
 
     #[test]
     fn from_radius_empty() {
-        assert_eq!(Circle::from_radius(Length::from_m(0.)), Sketch::empty())
+        assert_eq!(Circle::from_radius(length!(0)), Sketch::empty())
     }
 
     #[test]
     fn from_diameter_empty() {
-        assert_eq!(Circle::from_diameter(Length::from_m(0.)), Sketch::empty())
+        assert_eq!(Circle::from_diameter(length!(0)), Sketch::empty())
     }
 }
