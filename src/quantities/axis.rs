@@ -19,6 +19,31 @@ impl Axis {
         }
     }
 
+    /// Return the axis identical to the x-axis at the origin.
+    pub fn x() -> Self {
+        Axis::new(Point3D::origin(), (1., 0., 0.))
+    }
+    /// Return the axis identical to the y-axis at the origin.
+    pub fn y() -> Self {
+        Axis::new(Point3D::origin(), (0., 1., 0.))
+    }
+    /// Return the axis identical to the z-axis at the origin.
+    pub fn z() -> Self {
+        Axis::new(Point3D::origin(), (0., 0., 1.))
+    }
+    /// Return the axis identical to the x-axis at the origin in reverse direction.
+    pub fn neg_x() -> Self {
+        Axis::new(Point3D::origin(), (-1., 0., 0.))
+    }
+    /// Return the axis identical to the y-axis at the origin in reverse direction.
+    pub fn neg_y() -> Self {
+        Axis::new(Point3D::origin(), (0., -1., 0.))
+    }
+    /// Return the axis identical to the z-axis at the origin in reverse direction.
+    pub fn neg_z() -> Self {
+        Axis::new(Point3D::origin(), (0., 0., -1.))
+    }
+
     pub(crate) fn to_occt_ax1(&self) -> UniquePtr<ffi::gp_Ax1> {
         ffi::gp_Ax1_ctor(&self.origin.to_occt_point(), &self.direction.to_occt_dir())
     }
