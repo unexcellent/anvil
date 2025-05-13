@@ -140,6 +140,28 @@ impl Div<f64> for Angle {
     }
 }
 
+/// Macro for simplifying `Angle` construction for static values.
+///
+/// Create an angle with the correct unit by invoking `angle!([value] [unit])`.
+///
+/// # Examples
+/// ```rust
+/// use anvil::{angle, Angle};
+///
+/// assert_eq!(angle!(5 deg), Angle::from_deg(5.));
+/// assert_eq!(angle!(5.1 deg), Angle::from_deg(5.1));
+/// assert_eq!(angle!(2 rad), Angle::from_rad(2.));
+/// ```
+#[macro_export]
+macro_rules! angle {
+    ( $val:literal deg ) => {
+        $crate::Angle::from_deg($val)
+    };
+    ( $val:literal rad ) => {
+        $crate::Angle::from_rad($val)
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
