@@ -141,6 +141,8 @@ impl Sketch {
     }
     /// Return a clone of this `Sketch` rotated around its center.
     ///
+    /// Positive angle values result in a counter-clockwise rotation.
+    ///
     /// # Example
     /// ```rust
     /// use anvil::{Angle, Length, Point2D, Rectangle};
@@ -158,6 +160,8 @@ impl Sketch {
         }
     }
     /// Return a clone of this `Sketch` rotated around its center.
+    ///
+    /// Positive angle values result in a counter-clockwise rotation.
     ///
     /// # Example
     /// ```rust

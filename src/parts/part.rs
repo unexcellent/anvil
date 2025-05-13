@@ -135,14 +135,19 @@ impl Part {
             None => Self { inner: None },
         }
     }
-    /// Return a clone of this `Part` rotated around an axis.
+    /// Return a clone of this `Part` rotated around an `Axis`.
+    ///
+    /// For positive angles, the right-hand-rule applies for the direction of rotation.
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{Angle, Axis, Cuboid};
+    /// use anvil::{Angle, Axis, Cuboid, Point3D};
     ///
-    /// let cuboid = Cuboid::from_m(1, 2, 3);
-    /// assert_eq!(cuboid.rotate_around(Axis::x(), Angle::from_deg(90)), Cuboid::from_m(1, 3, 2));
+    /// let cuboid = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1, 1, 1));
+    /// assert_eq!(
+    ///     cuboid.rotate_around(Axis::x(), Angle::from_deg(90)),
+    ///     Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1, -1, 1))
+    /// )
     /// ```
     pub fn rotate_around(&self, axis: Axis, angle: Angle) -> Self {
         match &self.inner {
