@@ -56,6 +56,22 @@ impl Point2D {
         }
     }
 
+    /// Return the absolute distance between this `Point2D` and the origin point.
+    ///
+    /// # Example
+    /// ```rust
+    /// use core::f64;
+    /// use anvil::{Length, Point2D};
+    ///
+    /// let point = Point2D::from_m(1, 1);
+    /// assert_eq!(point.distance_to_origin(), Length::from_m(f64::sqrt(2.)))
+    /// ```
+    pub fn distance_to_origin(&self) -> Length {
+        Length::from_m(f64::sqrt(
+            f64::powi(self.x.m(), 2) + f64::powi(self.y.m(), 2),
+        ))
+    }
+
     /// Return the global position of this `Point2D` given the `Plane` it is located on.
     pub fn to_3d(&self, plane: &Plane) -> Point3D {
         plane.origin() + plane.x_axis() * self.x + plane.y_axis() * self.y

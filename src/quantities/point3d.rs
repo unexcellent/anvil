@@ -66,6 +66,22 @@ impl Point3D {
         }
     }
 
+    /// Return the absolute distance between this `Point3D` and the origin point.
+    ///
+    /// # Example
+    /// ```rust
+    /// use core::f64;
+    /// use anvil::{Length, Point3D};
+    ///
+    /// let point = Point3D::from_m(0, 1, 1);
+    /// assert_eq!(point.distance_to_origin(), Length::from_m(f64::sqrt(2.)))
+    /// ```
+    pub fn distance_to_origin(&self) -> Length {
+        Length::from_m(f64::sqrt(
+            f64::powi(self.x.m(), 2) + f64::powi(self.y.m(), 2) + f64::powi(self.z.m(), 2),
+        ))
+    }
+
     pub(crate) fn to_occt_point(self) -> UniquePtr<ffi::gp_Pnt> {
         ffi::new_point(self.x.m(), self.y.m(), self.z.m())
     }
