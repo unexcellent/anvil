@@ -117,20 +117,11 @@ impl Part {
     pub fn move_to(&self, loc: Point3D) -> Self {
         match &self.inner {
             Some(inner) => {
+                let move_vec = (loc - self.center().unwrap()).to_occt_vec();
                 let mut transform = ffi::new_transform();
-                transform.pin_mut().set_translation_vec(&ffi::new_vec(
-                    loc.x.m(),
-                    loc.y.m(),
-                    loc.z.m(),
-                ));
-                let location = ffi::TopLoc_Location_from_transform(&transform);
-
-                let mut new_inner = clone_topods_shape(inner);
-                new_inner.pin_mut().set_global_translation(&location, false);
-
-                Part {
-                    inner: Some(new_inner),
-                }
+                transform.pin_mut().set_translation_vec(&move_vec);
+                let mut operation = ffi::BRepBuilderAPI_Transform_ctor(inner, &transform, false);
+                Self::from_occt(operation.pin_mut().Shape())
             }
             None => Self { inner: None },
         }
@@ -383,7 +374,7 @@ fn round(x: f64, n_digits: u8) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Cuboid, Sphere, length};
+    use crate::{Cuboid, Point3D, Sphere, length, point};
 
     #[test]
     fn eq_both_none() {
@@ -454,5 +445,25 @@ mod tests {
                 .write_stl("/Users/tk/user/dev/anvil/local/out.stl")
                 .is_ok()
         );
+    }
+
+    #[test]
+    fn part_moved_twice() {
+        let part = Cuboid::from_m(1., 1., 1.);
+        assert_eq!(
+            part.move_to(Point3D::from_m(1, 1, 1))
+                .move_to(Point3D::from_m(2, 2, 2)),
+            Cuboid::from_m(1., 1., 1.).move_to(Point3D::from_m(2, 2, 2)),
+        )
+    }
+
+    #[test]
+    fn move_after_rotate_should_not_reset_rotate() {
+        let part = Cuboid::from_m(1., 1., 2.);
+        assert_eq!(
+            part.rotate_around(Axis::y(), angle!(90 deg))
+                .move_to(Point3D::origin()),
+            Cuboid::from_m(2., 1., 1.)
+        )
     }
 }
