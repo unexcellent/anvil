@@ -246,7 +246,7 @@ impl Part {
 
     /// Write the `Part` to a file in the STEP format.
     pub fn write_step(&self, path: impl AsRef<Path>) -> Result<(), Error> {
-        match &self.inner {
+        match &self.scale(1000.).inner {
             Some(inner) => {
                 let mut writer = ffi::STEPControl_Writer_ctor();
                 let status = ffi::transfer_shape(writer.pin_mut(), inner);
