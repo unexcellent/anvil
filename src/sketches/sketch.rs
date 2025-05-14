@@ -3,7 +3,7 @@ use std::vec;
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
 
-use crate::{Angle, Axis, Error, Length, Part, Plane, Point2D};
+use crate::{Angle, Axis, Error, Length, Part, Plane, Point2D, Point3D};
 
 use super::Edge;
 
@@ -62,11 +62,11 @@ impl Sketch {
     /// ```
     pub fn center(&self) -> Result<Point2D, Error> {
         let occt = self.to_occt(&Plane::xy())?;
-        let mut gprops = ffi::GProp_GProps_ctor();
-        ffi::BRepGProp_VolumeProperties(&occt, gprops.pin_mut());
-
-        let centre_of_mass = ffi::GProp_GProps_CentreOfMass(&gprops);
-        Ok(Point2D::from_m(centre_of_mass.X(), centre_of_mass.Y()))
+        let point_3d = occt_center(&occt);
+        Ok(Point2D {
+            x: point_3d.x,
+            y: point_3d.y,
+        })
     }
 
     /// Merge this `Sketch` with another.
@@ -178,6 +178,23 @@ impl Sketch {
         new_actions.push(SketchAction::RotateAround(point, angle));
         Self(new_actions)
     }
+    /// Return a clone of this `Sketch` with the size scaled by a factor.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Rectangle, length};
+    ///
+    /// let rect = Rectangle::from_dim(length!(1 m), length!(1 m));
+    /// assert_eq!(
+    ///     rect.scale(2.),
+    ///     Rectangle::from_dim(length!(2 m), length!(2 m))
+    /// )
+    /// ```
+    pub fn scale(&self, factor: f64) -> Self {
+        let mut new_actions = self.0.clone();
+        new_actions.push(SketchAction::Scale(factor));
+        Self(new_actions)
+    }
 
     /// Convert this `Sketch` into a `Part` by linearly extruding it.
     ///
@@ -267,6 +284,14 @@ fn occt_area(occt: &ffi::TopoDS_Shape) -> f64 {
     gprops.Mass()
 }
 
+fn occt_center(occt: &ffi::TopoDS_Shape) -> Point3D {
+    let mut gprops = ffi::GProp_GProps_ctor();
+    ffi::BRepGProp_VolumeProperties(&occt, gprops.pin_mut());
+
+    let centre_of_mass = ffi::GProp_GProps_CentreOfMass(&gprops);
+    Point3D::from_m(centre_of_mass.X(), centre_of_mass.Y(), centre_of_mass.X())
+}
+
 #[derive(Debug, PartialEq, Clone)]
 enum SketchAction {
     Add(Sketch),
@@ -274,6 +299,7 @@ enum SketchAction {
     Intersect(Sketch),
     MoveTo(Point2D),
     RotateAround(Point2D, Angle),
+    Scale(f64),
     Subtract(Sketch),
 }
 impl SketchAction {
@@ -334,6 +360,19 @@ impl SketchAction {
                         .to_occt_ax1(),
                         angle.rad(),
                     );
+                    let mut operation =
+                        ffi::BRepBuilderAPI_Transform_ctor(&shape, &transform, false);
+                    let new_shape = ffi::TopoDS_Shape_to_owned(operation.pin_mut().Shape());
+                    Some(new_shape)
+                }
+                None => None,
+            },
+            SketchAction::Scale(factor) => match sketch {
+                Some(shape) => {
+                    let mut transform = ffi::new_transform();
+                    transform
+                        .pin_mut()
+                        .SetScale(&occt_center(&shape).to_occt_point(), *factor);
                     let mut operation =
                         ffi::BRepBuilderAPI_Transform_ctor(&shape, &transform, false);
                     let new_shape = ffi::TopoDS_Shape_to_owned(operation.pin_mut().Shape());
