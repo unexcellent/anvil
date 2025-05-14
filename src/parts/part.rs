@@ -162,6 +162,32 @@ impl Part {
             None => Self { inner: None },
         }
     }
+    /// Return a clone of this `Part` with the size scaled by a factor.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Cuboid, length};
+    ///
+    /// let cuboid = Cuboid::from_dim(length!(1 m), length!(1 m), length!(1 m));
+    /// assert_eq!(
+    ///     cuboid.scale(2.),
+    ///     Cuboid::from_dim(length!(2 m), length!(2 m), length!(2 m))
+    /// )
+    /// ```
+    pub fn scale(&self, factor: f64) -> Self {
+        match &self.inner {
+            Some(inner) => {
+                let mut transform = ffi::new_transform();
+                transform.pin_mut().SetScale(
+                    &self.center().expect("shape is not empty").to_occt_point(),
+                    factor,
+                );
+                let mut operation = ffi::BRepBuilderAPI_Transform_ctor(inner, &transform, false);
+                Self::from_occt(operation.pin_mut().Shape())
+            }
+            None => Self { inner: None },
+        }
+    }
 
     /// Return the volume occupied by this `Part` in cubic meters.
     ///
