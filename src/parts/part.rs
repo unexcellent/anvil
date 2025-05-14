@@ -9,7 +9,7 @@ use cxx::UniquePtr;
 use opencascade_sys::ffi;
 use tempfile::NamedTempFile;
 
-use crate::{Angle, Axis, Error, Length, Point3D};
+use crate::{Angle, Axis, Error, Length, Point3D, angle};
 
 /// A 3D object in space.
 pub struct Part {
@@ -56,6 +56,32 @@ impl Part {
             (None, None) => self.clone(),
         }
     }
+
+    /// Merge this `Part` with another.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{angle, Axis, Cuboid, point};
+    ///
+    /// let cuboid = Cuboid::from_corners(point!(1 m, 1 m, 0 m), point!(2 m, 2 m, 1 m));
+    /// assert_eq!(
+    ///     cuboid.circular_pattern(Axis::z(), 4),
+    ///     cuboid
+    ///         .add(&cuboid.rotate_around(Axis::z(), angle!(90 deg)))
+    ///         .add(&cuboid.rotate_around(Axis::z(), angle!(180 deg)))
+    ///         .add(&cuboid.rotate_around(Axis::z(), angle!(270 deg)))
+    /// )
+    /// ```
+    pub fn circular_pattern(&self, axis: Axis, n: u8) -> Self {
+        let angle_step = angle!(360 deg) / n as f64;
+        let mut new_shape = self.clone();
+        let mut angle = angle!(0 deg);
+        for _ in 0..n {
+            new_shape = new_shape.add(&self.rotate_around(axis.clone(), angle));
+            angle = angle + angle_step;
+        }
+        new_shape
+    }
     /// Return the `Part` that is created from the overlapping volume between this one and another.
     ///
     /// # Example
@@ -75,32 +101,6 @@ impl Part {
                 Self::from_occt(fuse_operation.pin_mut().Shape())
             }
             _ => Part { inner: None },
-        }
-    }
-    /// Return a copy of this `Part` with the intersection of another removed.
-    ///
-    /// # Example
-    /// ```rust
-    /// use anvil::{Cuboid, Point3D};
-    ///
-    /// let cuboid1 = Cuboid::from_corners(
-    ///     Point3D::origin(),
-    ///     Point3D::from_m(1., 1., 2.)
-    /// );
-    /// let cuboid2 = Cuboid::from_corners(
-    ///     Point3D::from_m(0., 0., 1.),
-    ///     Point3D::from_m(1., 1., 2.)
-    /// );
-    /// assert!(cuboid1.subtract(&cuboid2) == Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 1.)));
-    /// ```
-    pub fn subtract(&self, other: &Self) -> Self {
-        match (&self.inner, &other.inner) {
-            (Some(self_inner), Some(other_inner)) => {
-                let mut fuse_operation = ffi::BRepAlgoAPI_Cut_ctor(self_inner, other_inner);
-                Self::from_occt(fuse_operation.pin_mut().Shape())
-            }
-            (Some(_), None) => self.clone(),
-            (None, _) => Part { inner: None },
         }
     }
     /// Return a clone of this `Part` with the center moved to a specified point.
@@ -186,6 +186,32 @@ impl Part {
                 Self::from_occt(operation.pin_mut().Shape())
             }
             None => Self { inner: None },
+        }
+    }
+    /// Return a copy of this `Part` with the intersection of another removed.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Cuboid, Point3D};
+    ///
+    /// let cuboid1 = Cuboid::from_corners(
+    ///     Point3D::origin(),
+    ///     Point3D::from_m(1., 1., 2.)
+    /// );
+    /// let cuboid2 = Cuboid::from_corners(
+    ///     Point3D::from_m(0., 0., 1.),
+    ///     Point3D::from_m(1., 1., 2.)
+    /// );
+    /// assert!(cuboid1.subtract(&cuboid2) == Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1., 1., 1.)));
+    /// ```
+    pub fn subtract(&self, other: &Self) -> Self {
+        match (&self.inner, &other.inner) {
+            (Some(self_inner), Some(other_inner)) => {
+                let mut fuse_operation = ffi::BRepAlgoAPI_Cut_ctor(self_inner, other_inner);
+                Self::from_occt(fuse_operation.pin_mut().Shape())
+            }
+            (Some(_), None) => self.clone(),
+            (None, _) => Part { inner: None },
         }
     }
 

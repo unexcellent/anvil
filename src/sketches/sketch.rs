@@ -105,24 +105,6 @@ impl Sketch {
         new_actions.push(SketchAction::Intersect(other.clone()));
         Self(new_actions)
     }
-    /// Return a copy of this `Sketch` with the intersection of another removed.
-    ///
-    /// # Example
-    /// ```rust
-    /// use anvil::{Rectangle, Point2D};
-    ///
-    /// let sketch1 = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(2., 2.));
-    /// let sketch2 = Rectangle::from_corners(Point2D::from_m(1., 0.), Point2D::from_m(2., 2.));
-    /// assert_eq!(
-    ///     sketch1.subtract(&sketch2),
-    ///     Rectangle::from_corners(Point2D::origin(), Point2D::from_m(1., 2.))
-    /// )
-    /// ```
-    pub fn subtract(&self, other: &Self) -> Self {
-        let mut new_actions = self.0.clone();
-        new_actions.push(SketchAction::Subtract(other.clone()));
-        Self(new_actions)
-    }
     /// Return a clone of this `Sketch` with the center moved to a specified point.
     ///
     /// # Example
@@ -193,6 +175,24 @@ impl Sketch {
     pub fn scale(&self, factor: f64) -> Self {
         let mut new_actions = self.0.clone();
         new_actions.push(SketchAction::Scale(factor));
+        Self(new_actions)
+    }
+    /// Return a copy of this `Sketch` with the intersection of another removed.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{Rectangle, Point2D};
+    ///
+    /// let sketch1 = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(2., 2.));
+    /// let sketch2 = Rectangle::from_corners(Point2D::from_m(1., 0.), Point2D::from_m(2., 2.));
+    /// assert_eq!(
+    ///     sketch1.subtract(&sketch2),
+    ///     Rectangle::from_corners(Point2D::origin(), Point2D::from_m(1., 2.))
+    /// )
+    /// ```
+    pub fn subtract(&self, other: &Self) -> Self {
+        let mut new_actions = self.0.clone();
+        new_actions.push(SketchAction::Subtract(other.clone()));
         Self(new_actions)
     }
 
@@ -286,7 +286,7 @@ fn occt_area(occt: &ffi::TopoDS_Shape) -> f64 {
 
 fn occt_center(occt: &ffi::TopoDS_Shape) -> Point3D {
     let mut gprops = ffi::GProp_GProps_ctor();
-    ffi::BRepGProp_VolumeProperties(&occt, gprops.pin_mut());
+    ffi::BRepGProp_VolumeProperties(occt, gprops.pin_mut());
 
     let centre_of_mass = ffi::GProp_GProps_CentreOfMass(&gprops);
     Point3D::from_m(centre_of_mass.X(), centre_of_mass.Y(), centre_of_mass.X())

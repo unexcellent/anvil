@@ -1,6 +1,6 @@
 use std::ops::{Add, Div, Mul, Sub};
 
-use crate::{Length, length};
+use crate::Length;
 
 use super::{IntoF64, Plane, Point3D};
 
