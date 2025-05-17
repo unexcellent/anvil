@@ -8,7 +8,7 @@ use super::into_f64::IntoF64;
 /// major CAD kernels.
 #[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
 pub struct Length {
-    mm: f64,
+    meters: f64,
 }
 impl Length {
     /// Construct a `Length` with a value of zero.
@@ -21,7 +21,7 @@ impl Length {
     /// assert_eq!(len.m(), 0.);
     /// ```
     pub fn zero() -> Self {
-        Self { mm: 0. }
+        Self { meters: 0. }
     }
     /// Construct a `Length` from a value of unit meters.
     ///
@@ -33,13 +33,13 @@ impl Length {
     /// assert_eq!(len.mm(), 3200.);
     /// ```
     pub fn from_m<T: IntoF64>(value: T) -> Self {
-        Length {
-            mm: value.into_f64() * 1000.,
+        Self {
+            meters: value.into_f64(),
         }
     }
     /// Return the value of this length in millimeters.
     pub fn m(&self) -> f64 {
-        self.mm / 1000.
+        self.meters
     }
     /// Construct a `Length` from a value of unit centimeters.
     ///
@@ -47,17 +47,15 @@ impl Length {
     /// ```rust
     /// use anvil::Length;
     ///
-    /// let len = Length::from_cm(5.4);
-    /// assert_eq!(len.mm(), 54.);
+    /// let len = Length::from_cm(5.1);
+    /// assert_eq!(len.mm(), 51.);
     /// ```
     pub fn from_cm<T: IntoF64>(value: T) -> Self {
-        Length {
-            mm: value.into_f64() * 10.,
-        }
+        Self::from_m(value.into_f64() / 100.)
     }
     /// Return the value of this length in centimeters.
     pub fn cm(&self) -> f64 {
-        self.mm / 10.
+        self.m() * 100.
     }
     /// Construct a `Length` from a value of unit millimeters.
     ///
@@ -69,13 +67,11 @@ impl Length {
     /// assert_eq!(len.m(), 0.0054);
     /// ```
     pub fn from_mm<T: IntoF64>(value: T) -> Self {
-        Length {
-            mm: value.into_f64(),
-        }
+        Self::from_m(value.into_f64() / 1000.)
     }
     /// Return the value of this length in millimeters.
     pub fn mm(&self) -> f64 {
-        self.mm
+        self.m() * 1000.
     }
 
     /// Return the smaller of two lengths.
@@ -90,9 +86,7 @@ impl Length {
     /// assert_eq!(len2.min(&len1), len1);
     /// ```
     pub fn min(&self, other: &Self) -> Self {
-        Length {
-            mm: self.mm.min(other.mm),
-        }
+        Length::from_m(self.m().min(other.m()))
     }
     /// Return the larger of two lengths.
     ///
@@ -106,36 +100,28 @@ impl Length {
     /// assert_eq!(len2.max(&len1), len2);
     /// ```
     pub fn max(&self, other: &Self) -> Self {
-        Length {
-            mm: self.mm.max(other.mm),
-        }
+        Length::from_m(self.m().max(other.m()))
     }
 }
 
 impl Add<Length> for Length {
     type Output = Length;
     fn add(self, other: Length) -> Length {
-        Length {
-            mm: self.mm + other.mm,
-        }
+        Length::from_m(self.m() + other.m())
     }
 }
 
 impl Sub<Length> for Length {
     type Output = Length;
     fn sub(self, other: Length) -> Length {
-        Length {
-            mm: self.mm - other.mm,
-        }
+        Length::from_m(self.m() - other.m())
     }
 }
 
 impl Mul<f64> for Length {
     type Output = Length;
     fn mul(self, other: f64) -> Length {
-        Length {
-            mm: self.mm * other,
-        }
+        Length::from_m(self.m() * other)
     }
 }
 
@@ -149,16 +135,14 @@ impl Mul<Length> for f64 {
 impl Div<f64> for Length {
     type Output = Length;
     fn div(self, other: f64) -> Length {
-        Length {
-            mm: self.mm / other,
-        }
+        Length::from_m(self.m() / other)
     }
 }
 
 /// Return true if any length in the input array is zero.
 pub fn is_zero(lengths: &[Length]) -> bool {
     for length in lengths {
-        if length.mm == 0. {
+        if length.m() == 0. {
             return true;
         }
     }
