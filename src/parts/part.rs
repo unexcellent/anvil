@@ -363,10 +363,6 @@ impl Debug for Part {
     }
 }
 
-fn clone_topods_shape(inner: &UniquePtr<ffi::TopoDS_Shape>) -> UniquePtr<ffi::TopoDS_Shape> {
-    ffi::TopoDS_Shape_to_owned(inner)
-}
-
 fn round(x: f64, n_digits: u8) -> f64 {
     (x * f64::from(10 ^ n_digits)).round() / f64::from(10 ^ n_digits)
 }
@@ -374,7 +370,7 @@ fn round(x: f64, n_digits: u8) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Cuboid, Point3D, Sphere, length, point};
+    use crate::{Cuboid, Point3D, Sphere, length};
 
     #[test]
     fn eq_both_none() {
