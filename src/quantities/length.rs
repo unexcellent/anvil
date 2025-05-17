@@ -6,6 +6,30 @@ use super::into_f64::IntoF64;
 ///
 /// Length exists to remove ambiguity about distance units, which are not supported by default by
 /// major CAD kernels.
+///
+/// ```rust
+/// use anvil::Length;
+///
+/// // You can construct a length using the Length::from_[unit] methods like
+/// let meters_length = Length::from_m(1.2);
+/// let centimeters_length = Length::from_cm(4.5);
+/// let inches_length = Length::from_in(12.);
+///
+/// // To get back a length value in a unit call the Length.[unit] method
+/// assert_eq!(meters_length.cm(), 120.);
+/// assert_eq!(centimeters_length.m(), 0.045);
+/// assert!((inches_length.ft() - 1.).abs() < 1e-9);
+///
+/// // Length construction can also be simplified using the length! macro
+/// use anvil::length;
+///
+/// assert_eq!(length!(1.2 m), Length::from_m(1.2));
+/// assert_eq!(length!(4.5 cm), Length::from_cm(4.5));
+/// assert_eq!(length!(12 in), Length::from_in(12.));
+///
+/// // You can savely add or subtract Lengths in different units.
+/// assert_eq!(length!(1 m) + length!(4 cm), length!(104 cm));
+/// ```
 #[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
 pub struct Length {
     meters: f64,
