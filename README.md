@@ -18,6 +18,7 @@ let thickness = length!(1.2 mm);
 let tube_diameter = length!(6.5 mm);
 
 let block = Cuboid::from_dim(block_width, block_width, block_height);
+
 let studs = Cylinder::from_diameter(stud_diameter, stud_height)
     .move_to(Point3D::new(
         stud_distance / 2.,
@@ -25,15 +26,12 @@ let studs = Cylinder::from_diameter(stud_diameter, stud_height)
         (block_height + stud_height) / 2.,
     ))
     .circular_pattern(Axis::z(), 4);
-let inner_block = Cuboid::from_dim(
-    block_width - thickness,
-    block_width - thickness,
-    block_height,
-)
-.move_to(Point3D::new(length!(0), length!(0), thickness * -0.5));
-let inner_tube = Cylinder::from_diameter(tube_diameter, block_height - thickness).subtract(
-    &Cylinder::from_diameter(tube_diameter - thickness / 2., block_height - thickness),
-);
+
+let inner_block = Cuboid::from_dim(block_width - thickness, block_width - thickness, block_height)
+    .move_to(Point3D::new(length!(0), length!(0), thickness * -0.5));
+
+let inner_tube = Cylinder::from_diameter(tube_diameter, block_height - thickness)
+    .subtract(&Cylinder::from_diameter(tube_diameter - thickness / 2., block_height - thickness));
 
 let part = block.add(&studs).subtract(&inner_block).add(&inner_tube);
 ```
