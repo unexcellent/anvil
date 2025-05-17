@@ -5,8 +5,26 @@ use super::into_f64::IntoF64;
 
 /// A physical angle (i.e. a distance).
 ///
-/// Angle exists to remove ambiguity about distance units, which are not supported by default by
+/// Angle exists to remove ambiguity about angle units, which are not supported by default by
 /// major CAD kernels.
+///
+/// ```rust
+/// use anvil::Angle;
+///
+/// // You can construct an angle using the Angle::from_[unit] methods:
+/// let degrees_angle = Angle::from_deg(1.2);
+/// let radians_angle = Angle::from_rad(3.4);
+///
+/// // To get back a angle value in a specific unit, call the Angle.[unit] method
+/// assert_eq!(degrees_angle.deg(), 1.2);
+/// assert_eq!(radians_angle.rad(), 3.4);
+///
+/// // Angle construction can also be simplified using the angle! macro
+/// use anvil::angle;
+///
+/// assert_eq!(angle!(1.2 deg), Angle::from_deg(1.2));
+/// assert_eq!(angle!(4.5 rad), Angle::from_rad(4.5));
+/// ```
 #[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
 pub struct Angle {
     rad: f64,
