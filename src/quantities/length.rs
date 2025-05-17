@@ -41,6 +41,73 @@ impl Length {
     pub fn m(&self) -> f64 {
         self.meters
     }
+    /// Construct a `Length` from a value of unit yards.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::Length;
+    ///
+    /// let len = Length::from_yd(1.);
+    /// assert_eq!(len.m(), 0.9144);
+    /// ```
+    pub fn from_yd<T: IntoF64>(value: T) -> Self {
+        Self::from_m(value.into_f64() * 0.9144)
+    }
+    /// Return the value of this length in yards.
+    pub fn yd(&self) -> f64 {
+        self.m() / 0.9144
+    }
+    /// Construct a `Length` from a value of unit feet.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::Length;
+    ///
+    /// let len = Length::from_ft(1.);
+    /// assert_eq!(len.cm(), 30.48);
+    /// ```
+    pub fn from_ft<T: IntoF64>(value: T) -> Self {
+        Self::from_m(value.into_f64() * 0.3048)
+    }
+    /// Return the value of this length in feet.
+    pub fn ft(&self) -> f64 {
+        self.m() / 0.3048
+    }
+    /// Construct a `Length` from a value of unit decimeters.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::Length;
+    ///
+    /// let len = Length::from_dm(5.1);
+    /// assert_eq!(len.mm(), 510.);
+    /// ```
+    pub fn from_dm<T: IntoF64>(value: T) -> Self {
+        Self::from_m(value.into_f64() / 10.)
+    }
+    /// Return the value of this length in decimeters.
+    pub fn dm(&self) -> f64 {
+        self.m() * 10.
+    }
+    /// Construct a `Length` from a value of unit inches.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::Length;
+    ///
+    /// let len = Length::from_in(1.);
+    /// assert_eq!(len.cm(), 2.54);
+    /// ```
+    pub fn from_in<T: IntoF64>(value: T) -> Self {
+        Self::from_m(value.into_f64() * 0.0254)
+    }
+    /// Return the value of this length in inches.
+    ///
+    /// This method breaks the pattern with the trailing underscore, because `in` is a reserved
+    /// keyword in Rust.
+    pub fn in_(&self) -> f64 {
+        self.m() / 0.0254
+    }
     /// Construct a `Length` from a value of unit centimeters.
     ///
     /// # Example
@@ -157,8 +224,12 @@ pub fn is_zero(lengths: &[Length]) -> bool {
 /// ```rust
 /// use anvil::{length, Length};
 ///
+/// assert_eq!(length!(1 yd), Length::from_yd(1));
 /// assert_eq!(length!(5 m), Length::from_m(5));
 /// assert_eq!(length!(5.1 m), Length::from_m(5.1));
+/// assert_eq!(length!(1 ft), Length::from_ft(1));
+/// assert_eq!(length!(1 dm), Length::from_dm(1));
+/// assert_eq!(length!(1 in), Length::from_in(1));
 /// assert_eq!(length!(2 cm), Length::from_cm(2.));
 /// assert_eq!(length!(1 mm), Length::from_mm(1));
 /// assert_eq!(length!(0), Length::zero());
@@ -168,8 +239,20 @@ macro_rules! length {
     ( 0 ) => {
         $crate::Length::zero()
     };
+    ( $val:literal yd ) => {
+        $crate::Length::from_yd($val as f64)
+    };
     ( $val:literal m ) => {
         $crate::Length::from_m($val as f64)
+    };
+    ( $val:literal ft ) => {
+        $crate::Length::from_ft($val as f64)
+    };
+    ( $val:literal dm ) => {
+        $crate::Length::from_dm($val as f64)
+    };
+    ( $val:literal in ) => {
+        $crate::Length::from_in($val as f64)
     };
     ( $val:literal cm ) => {
         $crate::Length::from_cm($val as f64)
