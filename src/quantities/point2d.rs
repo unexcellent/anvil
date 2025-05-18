@@ -122,19 +122,78 @@ impl Div<f64> for Point2D {
 ///
 /// # Examples
 /// ```rust
-/// use anvil::{Length, point, Point2D, Point3D};
+/// use anvil::{length, Length, point, Point2D, Point3D};
 ///
-/// assert_eq!(point!(1 m, 2 m), Point2D::new(Length::from_m(1), Length::from_m(2)));
-/// assert_eq!(point!(1 cm, 2.1 mm), Point2D::new(Length::from_cm(1), Length::from_mm(2.1)));
-/// assert_eq!(point!(1 m, 2 m, 3 m), Point3D::new(Length::from_m(1), Length::from_m(2), Length::from_m(3)));
+/// // Construct a Point2D from two length values
+/// assert_eq!(
+///     point!(1 m, 2 m),
+///     Point2D::new(Length::from_m(1), Length::from_m(2))
+/// );
+/// assert_eq!(
+///     point!(1 cm, 2.1 mm),
+///     Point2D::new(Length::from_cm(1), Length::from_mm(2.1))
+/// );
+///
+/// // Construct a Point2D from three length values
+/// assert_eq!(
+///     point!(1 m, 2 m, 3 m),
+///     Point3D::new(Length::from_m(1), Length::from_m(2), Length::from_m(3))
+/// );
+///
+/// // Use explicit expressions to construct a Point2D
+/// assert_eq!(
+///     point!(length!(1 cm), 2.1 mm),
+///     Point2D::new(Length::from_cm(1), Length::from_mm(2.1))
+/// );
+/// assert_eq!(
+///     point!(1 cm, length!(2.1 mm)),
+///     Point2D::new(Length::from_cm(1), Length::from_mm(2.1))
+/// );
+/// assert_eq!(
+///     point!(length!(1 cm), length!(2.1 mm)),
+///     Point2D::new(Length::from_cm(1), Length::from_mm(2.1))
+/// );
+///
+/// // Use explicit expressions to construct a Point2D
+/// assert_eq!(
+///     point!(length!(1 m), 2 m, 3 m),
+///     Point3D::new(Length::from_m(1), Length::from_m(2), Length::from_m(3))
+/// );
+/// assert_eq!(
+///     point!(1 m, length!(2 m), 3 m),
+///     Point3D::new(Length::from_m(1), Length::from_m(2), Length::from_m(3))
+/// );
+/// assert_eq!(
+///     point!(1 m, 2 m, length!(3 m)),
+///     Point3D::new(Length::from_m(1), Length::from_m(2), Length::from_m(3))
+/// );
 /// ```
 #[macro_export]
 macro_rules! point {
     ($x:literal $x_unit:ident, $y:literal $y_unit:ident) => {
         anvil::Point2D::new(anvil::length!($x $x_unit), anvil::length!($y $y_unit))
     };
+    ($x:expr, $y:literal $y_unit:ident) => {
+        anvil::Point2D::new($x, anvil::length!($y $y_unit))
+    };
+    ($x:literal $x_unit:ident, $y:expr) => {
+        anvil::Point2D::new(anvil::length!($x $x_unit), $y)
+    };
+    ($x:expr, $y:expr) => {
+        anvil::Point2D::new($x, $y)
+    };
+
     ($x:literal $x_unit:ident, $y:literal $y_unit:ident, $z:literal $z_unit:ident) => {
         anvil::Point3D::new(anvil::length!($x $x_unit), anvil::length!($y $y_unit), anvil::length!($z $z_unit))
+    };
+    ($x:expr, $y:literal $y_unit:ident, $z:literal $z_unit:ident) => {
+        anvil::Point3D::new($x, anvil::length!($y $y_unit), anvil::length!($z $z_unit))
+    };
+    ($x:literal $x_unit:ident, $y:expr, $z:literal $z_unit:ident) => {
+        anvil::Point3D::new(anvil::length!($x $x_unit), $y, anvil::length!($z $z_unit))
+    };
+    ($x:literal $x_unit:ident, $y:literal $y_unit:ident, $z:expr) => {
+        anvil::Point3D::new(anvil::length!($x $x_unit), anvil::length!($y $y_unit), $z)
     };
 }
 
