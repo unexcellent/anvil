@@ -5,7 +5,7 @@ use opencascade_sys::ffi;
 
 use crate::Length;
 
-use super::{IntoF64, Vec3};
+use super::{Dir3, IntoF64};
 
 /// A location in three-dimensional space.
 #[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
@@ -125,28 +125,28 @@ impl Div<f64> for Point3D {
 }
 
 impl Div<Length> for Point3D {
-    type Output = Vec3;
-    /// Divide this `Point3D` by a `Length` to receive a `Vec3`.
+    type Output = Dir3;
+    /// Divide this `Point3D` by a `Length` to receive a `Dir3`.
     /// ```rust
-    /// use anvil::{length, point, Vec3};
+    /// use anvil::{length, point, Dir3};
     ///
-    /// assert_eq!(point!(2 m, 4 m, 6 m) / length!(2 m), Vec3::from((1., 2., 3.)))
+    /// assert_eq!(point!(2 m, 4 m, 6 m) / length!(2 m), Dir3::from((1., 2., 3.)))
     /// ```
-    fn div(self, other: Length) -> Vec3 {
-        Vec3::from((self.x / other, self.y / other, self.z / other))
+    fn div(self, other: Length) -> Dir3 {
+        Dir3::from((self.x / other, self.y / other, self.z / other))
     }
 }
 
 impl Div<&Length> for Point3D {
-    type Output = Vec3;
-    /// Divide this `Point3D` by a `&Length` to receive a `Vec3`.
+    type Output = Dir3;
+    /// Divide this `Point3D` by a `&Length` to receive a `Dir3`.
     /// ```rust
-    /// use anvil::{length, point, Vec3};
+    /// use anvil::{length, point, Dir3};
     ///
-    /// assert_eq!(point!(2 m, 4 m, 6 m) / &length!(2 m), Vec3::from((1., 2., 3.)))
+    /// assert_eq!(point!(2 m, 4 m, 6 m) / &length!(2 m), Dir3::from((1., 2., 3.)))
     /// ```
-    fn div(self, other: &Length) -> Vec3 {
-        Vec3::from((self.x / other, self.y / other, self.z / other))
+    fn div(self, other: &Length) -> Dir3 {
+        Dir3::from((self.x / other, self.y / other, self.z / other))
     }
 }
 

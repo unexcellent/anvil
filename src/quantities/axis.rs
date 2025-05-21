@@ -3,7 +3,7 @@ use opencascade_sys::ffi;
 
 use crate::Error;
 
-use super::{Length, Point3D, Vec3};
+use super::{Dir3, Length, Point3D};
 
 /// An axis in 3D space.
 #[derive(Debug, PartialEq, Clone)]
@@ -11,14 +11,14 @@ pub struct Axis {
     /// A point contained in the axis.
     pub origin: Point3D,
     /// The directional vector of the axis.
-    pub direction: Vec3,
+    pub direction: Dir3,
 }
 impl Axis {
     /// Construct an `Axis`.
     pub fn new(origin: Point3D, direction: (f64, f64, f64)) -> Self {
         Self {
             origin,
-            direction: Vec3::from(direction),
+            direction: Dir3::from(direction),
         }
     }
 
@@ -52,13 +52,13 @@ impl Axis {
     /// This constructor can return an error if the two points are at the same location.
     ///
     /// ```rust
-    /// use anvil::{Axis, point, Vec3};
+    /// use anvil::{Axis, point, Dir3};
     ///
     /// assert_eq!(
     ///     Axis::between(point!(1 m, 1 m, 1 m), point!(2 m, 1 m, 1 m)),
     ///     Ok(Axis {
     ///         origin: point!(1 m, 1 m, 1 m),
-    ///         direction: Vec3::from((1., 0., 0.))
+    ///         direction: Dir3::from((1., 0., 0.))
     ///     })
     /// );
     /// assert!(Axis::between(point!(1 m, 1 m, 1 m), point!(1 m, 1 m, 1 m)).is_err())

@@ -1,10 +1,10 @@
 use crate::Error;
 
-use super::{Axis, Point3D, vec3::Vec3};
+use super::{Axis, Point3D, dir3::Dir3};
 
 /// A 2D plane in 3D space.
 #[derive(Debug, PartialEq, Clone)]
-pub struct Plane(Point3D, Vec3, Vec3);
+pub struct Plane(Point3D, Dir3, Dir3);
 impl Plane {
     /// Construct the `Plane` spaned by the x and y axes.
     pub fn xy() -> Self {
@@ -30,8 +30,8 @@ impl Plane {
         x_axis: (f64, f64, f64),
         y_axis: (f64, f64, f64),
     ) -> Result<Self, Error> {
-        let x_axis = Vec3::from(x_axis);
-        let y_axis = Vec3::from(y_axis);
+        let x_axis = Dir3::from(x_axis);
+        let y_axis = Dir3::from(y_axis);
 
         let axes_are_orthogonal = x_axis.dot(y_axis) < 1e-9;
         if !axes_are_orthogonal {
@@ -45,15 +45,15 @@ impl Plane {
         self.0
     }
     /// Return a the x-axis direction of this `Plane`.
-    pub fn x_axis(&self) -> Vec3 {
+    pub fn x_axis(&self) -> Dir3 {
         self.1
     }
     /// Return a the y-axis direction of this `Plane`.
-    pub fn y_axis(&self) -> Vec3 {
+    pub fn y_axis(&self) -> Dir3 {
         self.2
     }
-    /// Return a `Vec3` that is orthogonal to this plane.
-    pub fn normal(&self) -> Vec3 {
+    /// Return a `Dir3` that is orthogonal to this plane.
+    pub fn normal(&self) -> Dir3 {
         self.x_axis().cross(self.y_axis())
     }
     /// Return an `Axis` that is orthogonal to this plane and crosses its origin.
@@ -76,8 +76,8 @@ mod tests {
             plane,
             Ok(Plane(
                 Point3D::origin(),
-                Vec3::from((1., 0., 0.)),
-                Vec3::from((0., 1., 0.))
+                Dir3::from((1., 0., 0.)),
+                Dir3::from((0., 1., 0.))
             ))
         )
     }
@@ -89,8 +89,8 @@ mod tests {
             plane,
             Ok(Plane(
                 Point3D::origin(),
-                Vec3::from((1., 0., 0.)),
-                Vec3::from((0., 1., 0.))
+                Dir3::from((1., 0., 0.)),
+                Dir3::from((0., 1., 0.))
             ))
         )
     }
