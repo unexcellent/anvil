@@ -3,7 +3,7 @@ use std::vec;
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
 
-use crate::{Angle, Axis, Error, Length, Part, Plane, Point2D, Point3D};
+use crate::{angle, Angle, Axis, Error, Length, Part, Plane, Point2D, Point3D};
 
 use super::Edge;
 
@@ -86,6 +86,32 @@ impl Sketch {
         let mut new_actions = self.0.clone();
         new_actions.push(SketchAction::Add(other.clone()));
         Self(new_actions)
+    }
+
+    /// Create multiple instances of the `Sketch` spaced evenly around a point.
+    ///
+    /// # Example
+    /// ```rust
+    /// use anvil::{angle, point, Point2D, Rectangle};
+    ///
+    /// let rect = Rectangle::from_corners(point!(1 m, 1 m), point!(2 m, 2 m));
+    /// assert_eq!(
+    ///     rect.circular_pattern(Point2D::origin(), 4),
+    ///     rect
+    ///         .add(&rect.rotate_around(Point2D::origin(), angle!(90 deg)))
+    ///         .add(&rect.rotate_around(Point2D::origin(), angle!(180 deg)))
+    ///         .add(&rect.rotate_around(Point2D::origin(), angle!(270 deg)))
+    /// )
+    /// ```
+    pub fn circular_pattern(&self, around: Point2D, instances: u8) -> Self {
+        let angle_step = angle!(360 deg) / instances as f64;
+        let mut new_shape = self.clone();
+        let mut angle = angle!(0 deg);
+        for _ in 0..instances {
+            new_shape = new_shape.add(&self.rotate_around(around.clone(), angle));
+            angle = angle + angle_step;
+        }
+        new_shape
     }
     /// Return the `Sketch` that is created from the overlapping area between this one and another.
     ///
@@ -396,8 +422,8 @@ impl SketchAction {
 #[cfg(test)]
 mod tests {
     use crate::{
-        Cuboid, Cylinder, Path, Point2D, Point3D, Rectangle, angle, length,
-        sketches::primitives::Circle,
+        angle, length, sketches::primitives::Circle, Cuboid, Cylinder, Path, Point2D, Point3D,
+        Rectangle,
     };
 
     use super::*;

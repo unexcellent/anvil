@@ -9,7 +9,7 @@ use cxx::UniquePtr;
 use opencascade_sys::ffi;
 use tempfile::NamedTempFile;
 
-use crate::{Angle, Axis, Error, Length, Point3D, angle};
+use crate::{angle, Angle, Axis, Error, Length, Point3D};
 
 /// A 3D object in space.
 pub struct Part {
@@ -57,7 +57,7 @@ impl Part {
         }
     }
 
-    /// Merge this `Part` with another.
+    /// Create multiple instances of the `Sketch` spaced evenly around a point.
     ///
     /// # Example
     /// ```rust
@@ -370,7 +370,7 @@ fn round(x: f64, n_digits: u8) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Cuboid, Point3D, Sphere, length};
+    use crate::{length, Cuboid, Point3D, Sphere};
 
     #[test]
     fn eq_both_none() {
@@ -436,11 +436,9 @@ mod tests {
     #[test]
     fn write_stl() {
         let cuboid = Cuboid::from_m(1., 2., 3.);
-        assert!(
-            cuboid
-                .write_stl("/Users/tk/user/dev/anvil/local/out.stl")
-                .is_ok()
-        );
+        assert!(cuboid
+            .write_stl("/Users/tk/user/dev/anvil/local/out.stl")
+            .is_ok());
     }
 
     #[test]
