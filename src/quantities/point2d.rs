@@ -199,6 +199,8 @@ macro_rules! point {
 
 #[cfg(test)]
 mod tests {
+    use crate::Dir3;
+
     use super::*;
 
     #[test]
@@ -230,7 +232,12 @@ mod tests {
 
     #[test]
     fn to_3d_origin() {
-        let plane = Plane::new(Point3D::from_m(1., 2., 3.), (1., 1., 0.), (0., 0., 1.)).unwrap();
+        let plane = Plane::new(
+            Point3D::from_m(1., 2., 3.),
+            Dir3::try_from(1., 1., 0.).unwrap(),
+            Dir3::try_from(0., 0., 1.).unwrap(),
+        )
+        .unwrap();
         let point = Point2D::origin();
 
         assert_eq!(point.to_3d(&plane), plane.origin());
@@ -246,7 +253,12 @@ mod tests {
 
     #[test]
     fn to_3d_different_point() {
-        let plane = Plane::new(Point3D::origin(), (1., 0., -1.), (0., 1., 0.)).unwrap();
+        let plane = Plane::new(
+            Point3D::origin(),
+            Dir3::try_from(1., 0., -1.).unwrap(),
+            Dir3::try_from(0., 1., 0.).unwrap(),
+        )
+        .unwrap();
         let point = Point2D::from_mm(f64::sqrt(2.), 5.);
 
         let right = Point3D::from_mm(1., 5., -1.);

@@ -18,7 +18,7 @@ pub enum Error {
     StlWrite(PathBuf),
 
     /// Occurs when an operation that requires a length is performed on a `Dir3` with a magnitude of zero.
-    ZeroVector(Dir3),
+    ZeroVector,
 
     /// Occurs when two vectors that are required to be orthogonal, are not.
     VectorsNotOrthogonal(Dir3, Dir3),

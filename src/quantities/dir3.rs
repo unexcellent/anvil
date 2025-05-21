@@ -7,40 +7,51 @@ use crate::Error;
 
 use super::{Length, Point3D};
 
-/// A normalized direction in 3D space.
+/// A direction in 3D space with a length of 1.
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Dir3 {
-    pub x: f64,
-    pub y: f64,
-    pub z: f64,
+    x: f64,
+    y: f64,
+    z: f64,
 }
 impl Dir3 {
     /// Construct a `Dir3` from the directional components.
-    pub fn from(vec: (f64, f64, f64)) -> Self {
-        Dir3 {
-            x: vec.0,
-            y: vec.1,
-            z: vec.2,
+    ///
+    /// Returns an Error::ZeroVector if all of the axis components are zero.
+    ///
+    /// ```rust
+    /// use anvil::Dir3;
+    ///
+    /// let dir3 = Dir3::try_from(1., 2., 2.).expect("");
+    /// assert_eq!(dir3.x(), 1. / 3.);
+    /// assert_eq!(dir3.y(), 2. / 3.);
+    /// assert_eq!(dir3.z(), 2. / 3.);
+    /// ```
+    pub fn try_from(x: f64, y: f64, z: f64) -> Result<Self, Error> {
+        let magnitude = (x.powi(2) + y.powi(2) + z.powi(2)).sqrt();
+        if magnitude == 0. {
+            return Err(Error::ZeroVector);
         }
+        Ok(Dir3 {
+            x: x / magnitude,
+            y: y / magnitude,
+            z: z / magnitude,
+        })
     }
 
-    /// Return the absolute length of this `Dir3`.
-    pub fn magnitude(&self) -> f64 {
-        (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt()
+    /// Return the x-component of this `Dir3`.
+    pub fn x(&self) -> f64 {
+        self.x
     }
 
-    /// Return a `Dir3` that has the same direction as this one but a magnitude of 1.
-    pub fn normalize(&self) -> Result<Self, Error> {
-        let mag = self.magnitude();
-        if mag == 0. {
-            Err(Error::ZeroVector(*self))
-        } else {
-            Ok(Self {
-                x: self.x / mag,
-                y: self.y / mag,
-                z: self.z / mag,
-            })
-        }
+    /// Return the y-component of this `Dir3`.
+    pub fn y(&self) -> f64 {
+        self.y
+    }
+
+    /// Return the z-component of this `Dir3`.
+    pub fn z(&self) -> f64 {
+        self.z
     }
 
     /// Return the dot-product of this `Dir3` with another.
@@ -54,10 +65,6 @@ impl Dir3 {
             y: self.z * other.x - self.x * other.z,
             z: self.x * other.y - self.y * other.x,
         }
-    }
-
-    pub(crate) fn to_occt_vec(self) -> UniquePtr<ffi::gp_Vec> {
-        ffi::new_vec(self.x, self.y, self.z)
     }
 
     pub(crate) fn to_occt_dir(self) -> UniquePtr<ffi::gp_Dir> {
@@ -79,20 +86,6 @@ impl Mul<Length> for Dir3 {
 impl Mul<Dir3> for Length {
     type Output = Point3D;
     fn mul(self, other: Dir3) -> Point3D {
-        other * self
-    }
-}
-
-impl Mul<f64> for Dir3 {
-    type Output = Dir3;
-    fn mul(self, other: f64) -> Dir3 {
-        Dir3::from((self.x * other, self.y * other, self.z * other))
-    }
-}
-
-impl Mul<Dir3> for f64 {
-    type Output = Dir3;
-    fn mul(self, other: Dir3) -> Dir3 {
         other * self
     }
 }

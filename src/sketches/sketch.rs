@@ -3,7 +3,7 @@ use std::vec;
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
 
-use crate::{angle, Angle, Axis, Error, Length, Part, Plane, Point2D, Point3D};
+use crate::{Angle, Axis, Error, Length, Part, Plane, Point2D, Point3D, angle};
 
 use super::Edge;
 
@@ -242,7 +242,7 @@ impl Sketch {
         let shape = self.to_occt(plane)?;
         let mut make_solid = ffi::BRepPrimAPI_MakePrism_ctor(
             &shape,
-            &(plane.normal() * thickness.m()).to_occt_vec(),
+            &(plane.normal() * thickness).to_occt_vec(),
             false,
             true,
         );
@@ -422,8 +422,8 @@ impl SketchAction {
 #[cfg(test)]
 mod tests {
     use crate::{
-        angle, length, sketches::primitives::Circle, Cuboid, Cylinder, Path, Point2D, Point3D,
-        Rectangle,
+        Cuboid, Cylinder, Path, Point2D, Point3D, Rectangle, angle, length,
+        sketches::primitives::Circle,
     };
 
     use super::*;

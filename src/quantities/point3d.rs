@@ -3,7 +3,7 @@ use std::ops::{Add, Div, Mul, Sub};
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
 
-use crate::Length;
+use crate::{Error, Length};
 
 use super::{Dir3, IntoF64};
 
@@ -82,6 +82,23 @@ impl Point3D {
         ))
     }
 
+    /// Return the direction this point lies in with respect to another point.
+    ///
+    /// ```rust
+    /// use anvil::{Dir3, Error, point, Point3D};
+    ///
+    /// let p = point!(1 m, 1 m, 1 m);
+    /// assert_eq!(p.direction_from(&Point3D::origin()), Dir3::try_from(1., 1., 1.));
+    /// assert_eq!(p.direction_from(&p), Err(Error::ZeroVector));
+    /// ```
+    pub fn direction_from(&self, other: &Point3D) -> Result<Dir3, Error> {
+        Dir3::try_from(
+            (self.x - other.x).m(),
+            (self.y - other.y).m(),
+            (self.z - other.z).m(),
+        )
+    }
+
     pub(crate) fn to_occt_point(self) -> UniquePtr<ffi::gp_Pnt> {
         ffi::new_point(self.x.m(), self.y.m(), self.z.m())
     }
@@ -121,32 +138,6 @@ impl Div<f64> for Point3D {
     type Output = Point3D;
     fn div(self, other: f64) -> Point3D {
         Point3D::new(self.x / other, self.y / other, self.z / other)
-    }
-}
-
-impl Div<Length> for Point3D {
-    type Output = Dir3;
-    /// Divide this `Point3D` by a `Length` to receive a `Dir3`.
-    /// ```rust
-    /// use anvil::{length, point, Dir3};
-    ///
-    /// assert_eq!(point!(2 m, 4 m, 6 m) / length!(2 m), Dir3::from((1., 2., 3.)))
-    /// ```
-    fn div(self, other: Length) -> Dir3 {
-        Dir3::from((self.x / other, self.y / other, self.z / other))
-    }
-}
-
-impl Div<&Length> for Point3D {
-    type Output = Dir3;
-    /// Divide this `Point3D` by a `&Length` to receive a `Dir3`.
-    /// ```rust
-    /// use anvil::{length, point, Dir3};
-    ///
-    /// assert_eq!(point!(2 m, 4 m, 6 m) / &length!(2 m), Dir3::from((1., 2., 3.)))
-    /// ```
-    fn div(self, other: &Length) -> Dir3 {
-        Dir3::from((self.x / other, self.y / other, self.z / other))
     }
 }
 
