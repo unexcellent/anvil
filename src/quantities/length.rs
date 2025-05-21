@@ -230,6 +230,32 @@ impl Div<f64> for Length {
     }
 }
 
+impl Div<Length> for Length {
+    type Output = f64;
+    /// Divide a `Length` by another `Length`.
+    /// ```rust
+    /// use anvil::length;
+    ///
+    /// assert_eq!(length!(6 m) / length!(2 m), 3.)
+    /// ```
+    fn div(self, other: Length) -> f64 {
+        self.meters / other.meters
+    }
+}
+
+impl Div<&Length> for Length {
+    type Output = f64;
+    /// Divide a `Length` by another `Length`.
+    /// ```rust
+    /// use anvil::length;
+    ///
+    /// assert_eq!(length!(6 m) / &length!(2 m), 3.)
+    /// ```
+    fn div(self, other: &Length) -> f64 {
+        self.meters / other.meters
+    }
+}
+
 /// Return true if any length in the input array is zero.
 pub fn is_zero(lengths: &[Length]) -> bool {
     for length in lengths {
