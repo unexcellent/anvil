@@ -9,20 +9,20 @@ use super::{Length, Point3D};
 
 /// A direction in 3D space with a length of 1.
 #[derive(Debug, PartialEq, Clone, Copy)]
-pub struct Dir3 {
+pub struct Dir3D {
     x: f64,
     y: f64,
     z: f64,
 }
-impl Dir3 {
-    /// Construct a `Dir3` from the directional components.
+impl Dir3D {
+    /// Construct a `Dir3D` from the directional components.
     ///
     /// Returns an Error::ZeroVector if all of the axis components are zero.
     ///
     /// ```rust
-    /// use anvil::Dir3;
+    /// use anvil::Dir3D;
     ///
-    /// let dir3 = Dir3::try_from(1., 2., 2.).expect("");
+    /// let dir3 = Dir3D::try_from(1., 2., 2.).expect("");
     /// assert_eq!(dir3.x(), 1. / 3.);
     /// assert_eq!(dir3.y(), 2. / 3.);
     /// assert_eq!(dir3.z(), 2. / 3.);
@@ -32,35 +32,35 @@ impl Dir3 {
         if magnitude == 0. {
             return Err(Error::ZeroVector);
         }
-        Ok(Dir3 {
+        Ok(Dir3D {
             x: x / magnitude,
             y: y / magnitude,
             z: z / magnitude,
         })
     }
 
-    /// Return the x-component of this `Dir3`.
+    /// Return the x-component of this `Dir3D`.
     pub fn x(&self) -> f64 {
         self.x
     }
 
-    /// Return the y-component of this `Dir3`.
+    /// Return the y-component of this `Dir3D`.
     pub fn y(&self) -> f64 {
         self.y
     }
 
-    /// Return the z-component of this `Dir3`.
+    /// Return the z-component of this `Dir3D`.
     pub fn z(&self) -> f64 {
         self.z
     }
 
-    /// Return the dot-product of this `Dir3` with another.
-    pub fn dot(&self, other: Dir3) -> f64 {
+    /// Return the dot-product of this `Dir3D` with another.
+    pub fn dot(&self, other: Dir3D) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
-    /// Return the cross-product of this `Dir3` with another.
-    pub fn cross(&self, other: Dir3) -> Dir3 {
-        Dir3 {
+    /// Return the cross-product of this `Dir3D` with another.
+    pub fn cross(&self, other: Dir3D) -> Dir3D {
+        Dir3D {
             x: self.y * other.z - self.z * other.y,
             y: self.z * other.x - self.x * other.z,
             z: self.x * other.y - self.y * other.x,
@@ -72,7 +72,7 @@ impl Dir3 {
     }
 }
 
-impl Mul<Length> for Dir3 {
+impl Mul<Length> for Dir3D {
     type Output = Point3D;
     fn mul(self, other: Length) -> Point3D {
         Point3D {
@@ -83,9 +83,9 @@ impl Mul<Length> for Dir3 {
     }
 }
 
-impl Mul<Dir3> for Length {
+impl Mul<Dir3D> for Length {
     type Output = Point3D;
-    fn mul(self, other: Dir3) -> Point3D {
+    fn mul(self, other: Dir3D) -> Point3D {
         other * self
     }
 }

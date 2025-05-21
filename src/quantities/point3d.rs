@@ -5,7 +5,7 @@ use opencascade_sys::ffi;
 
 use crate::{Error, Length};
 
-use super::Dir3;
+use super::Dir3D;
 
 /// A location in three-dimensional space.
 #[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
@@ -85,14 +85,14 @@ impl Point3D {
     /// Return the direction this point lies in with respect to another point.
     ///
     /// ```rust
-    /// use anvil::{Dir3, Error, point, Point3D};
+    /// use anvil::{Dir3D, Error, point, Point3D};
     ///
     /// let p = point!(1 m, 1 m, 1 m);
-    /// assert_eq!(p.direction_from(&Point3D::origin()), Dir3::try_from(1., 1., 1.));
+    /// assert_eq!(p.direction_from(&Point3D::origin()), Dir3D::try_from(1., 1., 1.));
     /// assert_eq!(p.direction_from(&p), Err(Error::ZeroVector));
     /// ```
-    pub fn direction_from(&self, other: &Point3D) -> Result<Dir3, Error> {
-        Dir3::try_from(
+    pub fn direction_from(&self, other: &Point3D) -> Result<Dir3D, Error> {
+        Dir3D::try_from(
             (self.x - other.x).m(),
             (self.y - other.y).m(),
             (self.z - other.z).m(),
