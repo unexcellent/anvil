@@ -2,7 +2,7 @@ use std::ops::{Add, Div, Mul, Sub};
 
 use crate::Length;
 
-use super::{IntoF64, Plane, Point3D};
+use super::{Plane, Point3D};
 
 /// A location in two-dimensional space.
 #[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
@@ -29,11 +29,11 @@ impl Point2D {
     /// ```rust
     /// use anvil::{length, Point2D};
     ///
-    /// let point = Point2D::from_mm(1, 2);
+    /// let point = Point2D::from_mm(1., 2.);
     /// assert_eq!(point.x, length!(1 mm));
     /// assert_eq!(point.y, length!(2 mm));
     /// ```
-    pub fn from_mm<T: IntoF64, U: IntoF64>(x: T, y: U) -> Self {
+    pub fn from_mm(x: f64, y: f64) -> Self {
         Point2D {
             x: Length::from_mm(x),
             y: Length::from_mm(y),
@@ -45,11 +45,11 @@ impl Point2D {
     /// ```rust
     /// use anvil::{length, Point2D};
     ///
-    /// let point = Point2D::from_m(1, 2);
+    /// let point = Point2D::from_m(1., 2.);
     /// assert_eq!(point.x, length!(1 m));
     /// assert_eq!(point.y, length!(2 m));
     /// ```
-    pub fn from_m<T: IntoF64, U: IntoF64>(x: T, y: U) -> Self {
+    pub fn from_m(x: f64, y: f64) -> Self {
         Point2D {
             x: Length::from_m(x),
             y: Length::from_m(y),
@@ -63,7 +63,7 @@ impl Point2D {
     /// use core::f64;
     /// use anvil::{Length, Point2D};
     ///
-    /// let point = Point2D::from_m(1, 1);
+    /// let point = Point2D::from_m(1., 1.);
     /// assert_eq!(point.distance_to_origin(), Length::from_m(f64::sqrt(2.)))
     /// ```
     pub fn distance_to_origin(&self) -> Length {
@@ -127,45 +127,45 @@ impl Div<f64> for Point2D {
 /// // Construct a Point2D from two length values
 /// assert_eq!(
 ///     point!(1 m, 2 m),
-///     Point2D::new(Length::from_m(1), Length::from_m(2))
+///     Point2D::new(Length::from_m(1.), Length::from_m(2.))
 /// );
 /// assert_eq!(
 ///     point!(1 cm, 2.1 mm),
-///     Point2D::new(Length::from_cm(1), Length::from_mm(2.1))
+///     Point2D::new(Length::from_cm(1.), Length::from_mm(2.1))
 /// );
 ///
 /// // Construct a Point2D from three length values
 /// assert_eq!(
 ///     point!(1 m, 2 m, 3 m),
-///     Point3D::new(Length::from_m(1), Length::from_m(2), Length::from_m(3))
+///     Point3D::new(Length::from_m(1.), Length::from_m(2.), Length::from_m(3.))
 /// );
 ///
 /// // Use explicit expressions to construct a Point2D
 /// assert_eq!(
 ///     point!(length!(1 cm), 2.1 mm),
-///     Point2D::new(Length::from_cm(1), Length::from_mm(2.1))
+///     Point2D::new(Length::from_cm(1.), Length::from_mm(2.1))
 /// );
 /// assert_eq!(
 ///     point!(1 cm, length!(2.1 mm)),
-///     Point2D::new(Length::from_cm(1), Length::from_mm(2.1))
+///     Point2D::new(Length::from_cm(1.), Length::from_mm(2.1))
 /// );
 /// assert_eq!(
 ///     point!(length!(1 cm), length!(2.1 mm)),
-///     Point2D::new(Length::from_cm(1), Length::from_mm(2.1))
+///     Point2D::new(Length::from_cm(1.), Length::from_mm(2.1))
 /// );
 ///
 /// // Use explicit expressions to construct a Point2D
 /// assert_eq!(
 ///     point!(length!(1 m), 2 m, 3 m),
-///     Point3D::new(Length::from_m(1), Length::from_m(2), Length::from_m(3))
+///     Point3D::new(Length::from_m(1.), Length::from_m(2.), Length::from_m(3.))
 /// );
 /// assert_eq!(
 ///     point!(1 m, length!(2 m), 3 m),
-///     Point3D::new(Length::from_m(1), Length::from_m(2), Length::from_m(3))
+///     Point3D::new(Length::from_m(1.), Length::from_m(2.), Length::from_m(3.))
 /// );
 /// assert_eq!(
 ///     point!(1 m, 2 m, length!(3 m)),
-///     Point3D::new(Length::from_m(1), Length::from_m(2), Length::from_m(3))
+///     Point3D::new(Length::from_m(1.), Length::from_m(2.), Length::from_m(3.))
 /// );
 /// ```
 #[macro_export]

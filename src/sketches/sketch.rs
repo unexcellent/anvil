@@ -108,7 +108,7 @@ impl Sketch {
         let mut new_shape = self.clone();
         let mut angle = angle!(0 deg);
         for _ in 0..instances {
-            new_shape = new_shape.add(&self.rotate_around(around.clone(), angle));
+            new_shape = new_shape.add(&self.rotate_around(around, angle));
             angle = angle + angle_step;
         }
         new_shape
@@ -155,10 +155,10 @@ impl Sketch {
     /// ```rust
     /// use anvil::{angle, length, Point2D, Rectangle};
     ///
-    /// let sketch = Rectangle::from_dim(length!(1 m), length!(2 m)).move_to(Point2D::from_m(1, 1));
+    /// let sketch = Rectangle::from_dim(length!(1 m), length!(2 m)).move_to(Point2D::from_m(1., 1.));
     /// assert_eq!(
     ///     sketch.rotate(angle!(90 deg)),
-    ///     Rectangle::from_dim(length!(2 m), length!(1 m)).move_to(Point2D::from_m(1, 1))
+    ///     Rectangle::from_dim(length!(2 m), length!(1 m)).move_to(Point2D::from_m(1., 1.))
     /// )
     /// ```
     pub fn rotate(&self, angle: Angle) -> Self {
@@ -175,10 +175,10 @@ impl Sketch {
     /// ```rust
     /// use anvil::{angle, Point2D, Rectangle};
     ///
-    /// let sketch = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(1, 1));
+    /// let sketch = Rectangle::from_corners(Point2D::origin(), Point2D::from_m(1., 1.));
     /// assert_eq!(
     ///     sketch.rotate_around(Point2D::origin(), angle!(90 deg)),
-    ///     Rectangle::from_corners(Point2D::origin(), Point2D::from_m(-1, 1))
+    ///     Rectangle::from_corners(Point2D::origin(), Point2D::from_m(-1., 1.))
     /// )
     /// ```
     pub fn rotate_around(&self, point: Point2D, angle: Angle) -> Self {
@@ -479,8 +479,8 @@ mod tests {
     #[test]
     fn ne_different_sketches() {
         assert_ne!(
-            Rectangle::from_dim(length!(1 m), length!(1 m)).move_to(Point2D::from_m(2, 2)),
-            Circle::from_radius(length!(1 m)).move_to(Point2D::from_m(2, 2)),
+            Rectangle::from_dim(length!(1 m), length!(1 m)).move_to(Point2D::from_m(2., 2.)),
+            Circle::from_radius(length!(1 m)).move_to(Point2D::from_m(2., 2.)),
         )
     }
 

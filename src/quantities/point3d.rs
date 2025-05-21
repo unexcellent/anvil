@@ -5,7 +5,7 @@ use opencascade_sys::ffi;
 
 use crate::{Error, Length};
 
-use super::{Dir3, IntoF64};
+use super::Dir3;
 
 /// A location in three-dimensional space.
 #[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
@@ -35,12 +35,12 @@ impl Point3D {
     /// ```rust
     /// use anvil::{length, Point3D};
     ///
-    /// let point = Point3D::from_mm(1, 2, 3);
+    /// let point = Point3D::from_mm(1., 2., 3.);
     /// assert_eq!(point.x, length!(1 mm));
     /// assert_eq!(point.y, length!(2 mm));
     /// assert_eq!(point.z, length!(3 mm));
     /// ```
-    pub fn from_mm<T: IntoF64, U: IntoF64, V: IntoF64>(x: T, y: U, z: V) -> Self {
+    pub fn from_mm(x: f64, y: f64, z: f64) -> Self {
         Point3D {
             x: Length::from_mm(x),
             y: Length::from_mm(y),
@@ -53,12 +53,12 @@ impl Point3D {
     /// ```rust
     /// use anvil::{length, Point3D};
     ///
-    /// let point = Point3D::from_m(1, 2, 3);
+    /// let point = Point3D::from_m(1., 2., 3.);
     /// assert_eq!(point.x, length!(1 m));
     /// assert_eq!(point.y, length!(2 m));
     /// assert_eq!(point.z, length!(3 m));
     /// ```
-    pub fn from_m<T: IntoF64, U: IntoF64, V: IntoF64>(x: T, y: U, z: V) -> Self {
+    pub fn from_m(x: f64, y: f64, z: f64) -> Self {
         Point3D {
             x: Length::from_m(x),
             y: Length::from_m(y),
@@ -73,7 +73,7 @@ impl Point3D {
     /// use core::f64;
     /// use anvil::{Length, Point3D};
     ///
-    /// let point = Point3D::from_m(0, 1, 1);
+    /// let point = Point3D::from_m(0., 1., 1.);
     /// assert_eq!(point.distance_to_origin(), Length::from_m(f64::sqrt(2.)))
     /// ```
     pub fn distance_to_origin(&self) -> Length {

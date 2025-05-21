@@ -3,7 +3,7 @@ use opencascade_sys::ffi;
 
 use crate::Error;
 
-use super::{Dir3, Length, Point3D};
+use super::{Dir3, Point3D};
 
 /// An axis in 3D space.
 #[derive(Debug, PartialEq, Clone)]

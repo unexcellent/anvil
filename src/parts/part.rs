@@ -9,7 +9,7 @@ use cxx::UniquePtr;
 use opencascade_sys::ffi;
 use tempfile::NamedTempFile;
 
-use crate::{angle, Angle, Axis, Error, Length, Point3D};
+use crate::{Angle, Axis, Error, Length, Point3D, angle};
 
 /// A 3D object in space.
 pub struct Part {
@@ -132,12 +132,12 @@ impl Part {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{angle, Axis, Cuboid, Point3D};
+    /// use anvil::{angle, Axis, Cuboid, point, Point3D};
     ///
-    /// let cuboid = Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1, 1, 1));
+    /// let cuboid = Cuboid::from_corners(Point3D::origin(), point!(1 m, 1 m , 1 m));
     /// assert_eq!(
     ///     cuboid.rotate_around(Axis::x(), angle!(90 deg)),
-    ///     Cuboid::from_corners(Point3D::origin(), Point3D::from_m(1, -1, 1))
+    ///     Cuboid::from_corners(Point3D::origin(), point!(1 m, -1 m , 1 m))
     /// )
     /// ```
     pub fn rotate_around(&self, axis: Axis, angle: Angle) -> Self {
@@ -370,7 +370,7 @@ fn round(x: f64, n_digits: u8) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{length, Cuboid, Point3D, Sphere};
+    use crate::{Cuboid, Point3D, Sphere, length};
 
     #[test]
     fn eq_both_none() {
@@ -436,18 +436,20 @@ mod tests {
     #[test]
     fn write_stl() {
         let cuboid = Cuboid::from_m(1., 2., 3.);
-        assert!(cuboid
-            .write_stl("/Users/tk/user/dev/anvil/local/out.stl")
-            .is_ok());
+        assert!(
+            cuboid
+                .write_stl("/Users/tk/user/dev/anvil/local/out.stl")
+                .is_ok()
+        );
     }
 
     #[test]
     fn part_moved_twice() {
         let part = Cuboid::from_m(1., 1., 1.);
         assert_eq!(
-            part.move_to(Point3D::from_m(1, 1, 1))
-                .move_to(Point3D::from_m(2, 2, 2)),
-            Cuboid::from_m(1., 1., 1.).move_to(Point3D::from_m(2, 2, 2)),
+            part.move_to(Point3D::from_m(1., 1., 1.))
+                .move_to(Point3D::from_m(2., 2., 2.)),
+            Cuboid::from_m(1., 1., 1.).move_to(Point3D::from_m(2., 2., 2.)),
         )
     }
 
