@@ -72,12 +72,12 @@ impl Part {
     ///         .add(&cuboid.rotate_around(Axis::z(), angle!(270 deg)))
     /// )
     /// ```
-    pub fn circular_pattern(&self, axis: Axis, n: u8) -> Self {
-        let angle_step = angle!(360 deg) / n as f64;
+    pub fn circular_pattern(&self, around: Axis, instances: u8) -> Self {
+        let angle_step = angle!(360 deg) / instances as f64;
         let mut new_shape = self.clone();
         let mut angle = angle!(0 deg);
-        for _ in 0..n {
-            new_shape = new_shape.add(&self.rotate_around(axis.clone(), angle));
+        for _ in 0..instances {
+            new_shape = new_shape.add(&self.rotate_around(around.clone(), angle));
             angle = angle + angle_step;
         }
         new_shape
