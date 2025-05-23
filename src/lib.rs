@@ -9,11 +9,11 @@ mod sketches;
 
 pub use errors::Error;
 pub use parts::{
-    Part,
     primitives::{Cuboid, Cylinder, Sphere},
+    Part,
 };
-pub use quantities::{Angle, Axis, Dir3D, Length, Plane, Point2D, Point3D};
+pub use quantities::{Angle, Axis, Dir2D, Dir3D, Length, Plane, Point2D, Point3D};
 pub use sketches::{
-    Edge, Path, Sketch,
     primitives::{Circle, Rectangle},
+    Edge, Path, Sketch,
 };

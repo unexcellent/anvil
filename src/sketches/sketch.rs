@@ -3,7 +3,7 @@ use std::vec;
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
 
-use crate::{Angle, Axis, Error, Length, Part, Plane, Point2D, Point3D, angle};
+use crate::{angle, Angle, Axis, Error, Length, Part, Plane, Point2D, Point3D};
 
 use super::Edge;
 
@@ -131,7 +131,6 @@ impl Sketch {
         new_actions.push(SketchAction::Intersect(other.clone()));
         Self(new_actions)
     }
-    /// Return a clone of this `Sketch` with the center moved to a specified point.
     ///
     /// # Example
     /// ```rust
@@ -422,8 +421,8 @@ impl SketchAction {
 #[cfg(test)]
 mod tests {
     use crate::{
-        Cuboid, Cylinder, Path, Point2D, Point3D, Rectangle, angle, length,
-        sketches::primitives::Circle,
+        angle, length, sketches::primitives::Circle, Cuboid, Cylinder, Path, Point2D, Point3D,
+        Rectangle,
     };
 
     use super::*;
