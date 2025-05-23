@@ -1,5 +1,5 @@
 mod angle;
-mod axis;
+mod axis3d;
 mod dir2d;
 mod dir3d;
 mod length;
@@ -8,7 +8,7 @@ mod point2d;
 mod point3d;
 
 pub use angle::Angle;
-pub use axis::Axis;
+pub use axis3d::Axis3D;
 pub use dir2d::Dir2D;
 pub use dir3d::Dir3D;
 pub use length::{is_zero, Length};

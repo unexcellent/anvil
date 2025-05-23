@@ -1,6 +1,6 @@
 use crate::Error;
 
-use super::{Axis, Point3D, dir3d::Dir3D};
+use super::{Axis3D, Point3D, dir3d::Dir3D};
 
 /// A 2D plane in 3D space.
 #[derive(Debug, PartialEq, Clone)]
@@ -64,9 +64,9 @@ impl Plane {
     pub fn normal(&self) -> Dir3D {
         self.x_axis().cross(self.y_axis())
     }
-    /// Return an `Axis` that is orthogonal to this plane and crosses its origin.
-    pub fn normal_axis(&self) -> Axis {
-        Axis {
+    /// Return an `Axis3D` that is orthogonal to this plane and crosses its origin.
+    pub fn normal_axis(&self) -> Axis3D {
+        Axis3D {
             origin: self.origin(),
             direction: self.normal(),
         }

@@ -3,7 +3,7 @@ use std::vec;
 use cxx::UniquePtr;
 use opencascade_sys::ffi;
 
-use crate::{angle, Angle, Axis, Error, Length, Part, Plane, Point2D, Point3D};
+use crate::{angle, Angle, Axis3D, Error, Length, Part, Plane, Point2D, Point3D};
 
 use super::Edge;
 
@@ -378,7 +378,7 @@ impl SketchAction {
                 Some(shape) => {
                     let mut transform = ffi::new_transform();
                     transform.pin_mut().SetRotation(
-                        &Axis {
+                        &Axis3D {
                             origin: point.to_3d(plane),
                             direction: plane.normal(),
                         }

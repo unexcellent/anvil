@@ -9,7 +9,7 @@ use cxx::UniquePtr;
 use opencascade_sys::ffi;
 use tempfile::NamedTempFile;
 
-use crate::{angle, Angle, Axis, Error, Length, Point3D};
+use crate::{angle, Angle, Axis3D, Error, Length, Point3D};
 
 /// A 3D object in space.
 pub struct Part {
@@ -61,18 +61,18 @@ impl Part {
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{angle, Axis, Cuboid, point};
+    /// use anvil::{angle, Axis3D, Cuboid, point};
     ///
     /// let cuboid = Cuboid::from_corners(point!(1 m, 1 m, 0 m), point!(2 m, 2 m, 1 m));
     /// assert_eq!(
-    ///     cuboid.circular_pattern(Axis::z(), 4),
+    ///     cuboid.circular_pattern(Axis3D::z(), 4),
     ///     cuboid
-    ///         .add(&cuboid.rotate_around(Axis::z(), angle!(90 deg)))
-    ///         .add(&cuboid.rotate_around(Axis::z(), angle!(180 deg)))
-    ///         .add(&cuboid.rotate_around(Axis::z(), angle!(270 deg)))
+    ///         .add(&cuboid.rotate_around(Axis3D::z(), angle!(90 deg)))
+    ///         .add(&cuboid.rotate_around(Axis3D::z(), angle!(180 deg)))
+    ///         .add(&cuboid.rotate_around(Axis3D::z(), angle!(270 deg)))
     /// )
     /// ```
-    pub fn circular_pattern(&self, around: Axis, instances: u8) -> Self {
+    pub fn circular_pattern(&self, around: Axis3D, instances: u8) -> Self {
         let angle_step = angle!(360 deg) / instances as f64;
         let mut new_shape = self.clone();
         let mut angle = angle!(0);
@@ -124,7 +124,7 @@ impl Part {
             Ok(p) => p,
             Err(_) => return self.clone(),
         };
-        let axis = match Axis::between(start, *until) {
+        let axis = match Axis3D::between(start, *until) {
             Ok(axis) => axis,
             Err(_) => return self.clone(),
         };
@@ -161,21 +161,21 @@ impl Part {
             None => Self { inner: None },
         }
     }
-    /// Return a clone of this `Part` rotated around an `Axis`.
+    /// Return a clone of this `Part` rotated around an `Axis3D`.
     ///
     /// For positive angles, the right-hand-rule applies for the direction of rotation.
     ///
     /// # Example
     /// ```rust
-    /// use anvil::{angle, Axis, Cuboid, point, Point3D};
+    /// use anvil::{angle, Axis3D, Cuboid, point, Point3D};
     ///
     /// let cuboid = Cuboid::from_corners(Point3D::origin(), point!(1 m, 1 m , 1 m));
     /// assert_eq!(
-    ///     cuboid.rotate_around(Axis::x(), angle!(90 deg)),
+    ///     cuboid.rotate_around(Axis3D::x(), angle!(90 deg)),
     ///     Cuboid::from_corners(Point3D::origin(), point!(1 m, -1 m , 1 m))
     /// )
     /// ```
-    pub fn rotate_around(&self, axis: Axis, angle: Angle) -> Self {
+    pub fn rotate_around(&self, axis: Axis3D, angle: Angle) -> Self {
         match &self.inner {
             Some(inner) => {
                 let mut transform = ffi::new_transform();
@@ -490,7 +490,7 @@ mod tests {
     fn move_after_rotate_should_not_reset_rotate() {
         let part = Cuboid::from_m(1., 1., 2.);
         assert_eq!(
-            part.rotate_around(Axis::y(), angle!(90 deg))
+            part.rotate_around(Axis3D::y(), angle!(90 deg))
                 .move_to(Point3D::origin()),
             Cuboid::from_m(2., 1., 1.)
         )
