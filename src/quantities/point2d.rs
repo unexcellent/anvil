@@ -1,8 +1,8 @@
 use std::ops::{Add, Div, Mul, Sub};
 
-use crate::Length;
+use crate::{Error, Length};
 
-use super::{Plane, Point3D};
+use super::{Dir2D, Plane, Point3D};
 
 /// A location in two-dimensional space.
 #[derive(Debug, PartialEq, Copy, Clone, PartialOrd)]
@@ -70,6 +70,19 @@ impl Point2D {
         Length::from_m(f64::sqrt(
             f64::powi(self.x.m(), 2) + f64::powi(self.y.m(), 2),
         ))
+    }
+
+    /// Return the direction this point lies in with respect to another point.
+    ///
+    /// ```rust
+    /// use anvil::{Dir2D, Error, point, Point2D};
+    ///
+    /// let p = point!(1 m, 1 m);
+    /// assert_eq!(p.direction_from(&Point2D::origin()), Dir2D::try_from(1., 1.));
+    /// assert_eq!(p.direction_from(&p), Err(Error::ZeroVector));
+    /// ```
+    pub fn direction_from(&self, other: &Self) -> Result<Dir2D, Error> {
+        Dir2D::try_from((self.x - other.x).m(), (self.y - other.y).m())
     }
 
     /// Return the global position of this `Point2D` given the `Plane` it is located on.
