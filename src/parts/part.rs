@@ -9,7 +9,7 @@ use cxx::UniquePtr;
 use opencascade_sys::ffi;
 use tempfile::NamedTempFile;
 
-use crate::{Angle, Axis, Error, Length, Point3D, angle};
+use crate::{angle, Angle, Axis, Error, Length, Point3D};
 
 /// A 3D object in space.
 pub struct Part {
@@ -57,7 +57,7 @@ impl Part {
         }
     }
 
-    /// Create multiple instances of the `Sketch` spaced evenly around a point.
+    /// Create multiple instances of the `Part` spaced evenly around a point.
     ///
     /// # Example
     /// ```rust
@@ -75,7 +75,7 @@ impl Part {
     pub fn circular_pattern(&self, around: Axis, instances: u8) -> Self {
         let angle_step = angle!(360 deg) / instances as f64;
         let mut new_shape = self.clone();
-        let mut angle = angle!(0 deg);
+        let mut angle = angle!(0);
         for _ in 0..instances {
             new_shape = new_shape.add(&self.rotate_around(around.clone(), angle));
             angle = angle + angle_step;
@@ -102,6 +102,41 @@ impl Part {
             }
             _ => Part { inner: None },
         }
+    }
+
+    /// Create multiple instances of the `Part` spaced evenly until a point.
+    ///
+    /// ```rust
+    /// use anvil::{Cuboid, length, point};
+    ///
+    /// let cuboid = Cuboid::from_m(1., 1., 1.);
+    /// assert_eq!(
+    ///     cuboid.linear_pattern(&point!(4 m, 0 m, 0 m), 5),
+    ///     cuboid
+    ///         .add(&cuboid.move_to(point!(1 m, 0 m, 0 m)))
+    ///         .add(&cuboid.move_to(point!(2 m, 0 m, 0 m)))
+    ///         .add(&cuboid.move_to(point!(3 m, 0 m, 0 m)))
+    ///         .add(&cuboid.move_to(point!(4 m, 0 m, 0 m)))
+    /// )
+    /// ```
+    pub fn linear_pattern(&self, until: &Point3D, instances: u8) -> Self {
+        let start = match self.center() {
+            Ok(p) => p,
+            Err(_) => return self.clone(),
+        };
+        let axis = match Axis::between(start, *until) {
+            Ok(axis) => axis,
+            Err(_) => return self.clone(),
+        };
+
+        let len_step = (start - *until).distance_to_origin() / instances as f64;
+        let mut new_part = self.clone();
+        let mut pos = Length::zero();
+        for _ in 0..instances {
+            pos = pos + len_step;
+            new_part = new_part.add(&self.move_to(axis.point_at(&pos)));
+        }
+        new_part
     }
     /// Return a clone of this `Part` with the center moved to a specified point.
     ///
@@ -370,7 +405,7 @@ fn round(x: f64, n_digits: u8) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Cuboid, Point3D, Sphere, length};
+    use crate::{length, Cuboid, Point3D, Sphere};
 
     #[test]
     fn eq_both_none() {
@@ -436,11 +471,9 @@ mod tests {
     #[test]
     fn write_stl() {
         let cuboid = Cuboid::from_m(1., 2., 3.);
-        assert!(
-            cuboid
-                .write_stl("/Users/tk/user/dev/anvil/local/out.stl")
-                .is_ok()
-        );
+        assert!(cuboid
+            .write_stl("/Users/tk/user/dev/anvil/local/out.stl")
+            .is_ok());
     }
 
     #[test]

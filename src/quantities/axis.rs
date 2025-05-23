@@ -3,7 +3,7 @@ use opencascade_sys::ffi;
 
 use crate::Error;
 
-use super::{Dir3D, Point3D};
+use super::{Dir3D, Length, Point3D};
 
 /// An axis in 3D space.
 #[derive(Debug, PartialEq, Clone)]
@@ -63,6 +63,21 @@ impl Axis {
     /// Return the axis identical to the z-axis at the origin in reverse direction.
     pub fn neg_z() -> Self {
         Axis::new(Point3D::origin(), Dir3D::try_from(0., 0., -1.).expect(""))
+    }
+
+    /// Return a point on the `Axis` at a specified distance from the `Axis` origin.
+    ///
+    /// ```rust
+    /// use anvil::{Axis, length, point};
+    ///
+    /// let axis = Axis::x();
+    /// assert_eq!(
+    ///     axis.point_at(&length!(5 m)),
+    ///     point!(5 m, 0 m, 0 m),
+    /// )
+    /// ```
+    pub fn point_at(&self, distance: &Length) -> Point3D {
+        self.origin + self.direction * distance
     }
 
     pub(crate) fn to_occt_ax1(&self) -> UniquePtr<ffi::gp_Ax1> {
